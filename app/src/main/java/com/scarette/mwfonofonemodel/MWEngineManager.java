@@ -702,9 +702,9 @@ public class MWEngineManager {
                 case MARKER_POSITION_REACHED:
 //                    Log.d(LOG_TAG, "Marker position has been reached");
                     break;
-//                case RECORDING_COMPLETED:
-////                    Log.d(LOG_TAG, "Recording has completed");
-//                    break;
+                case RECORDING_COMPLETED:
+//                    Log.d(LOG_TAG, "Recording has completed");
+                    break;
             }
         }
 
@@ -723,17 +723,17 @@ public class MWEngineManager {
 //                    Log.d(LOG_TAG, "seq. position: " + sequencerPosition + ", buffer offset: " + aNotificationValue +
 //                            ", elapsed samples: " + elapsedSamples);
                     break;
-//                case RECORDED_SNIPPET_READY:
-//                    curActivity.runOnUiThread(new Runnable() {
-//                        public void run() {
-//                            // we run the saving on a different thread to prevent buffer under runs while rendering audio
-//                            _engine.saveRecordedSnippet(aNotificationValue); // notification value == snippet buffer index
-//                        }
-//                    });
-//                    break;
-//                case RECORDED_SNIPPET_SAVED:
-////                    Log.d(LOG_TAG, "Recorded snippet " + aNotificationValue + " saved to storage");
-//                    break;
+                case RECORDED_SNIPPET_READY:
+                    curActivity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            // we run the saving on a different thread to prevent buffer under runs while rendering audio
+                            _engine.saveRecordedSnippet(aNotificationValue); // notification value == snippet buffer index
+                        }
+                    });
+                    break;
+                case RECORDED_SNIPPET_SAVED:
+//                    Log.d(LOG_TAG, "Recorded snippet " + aNotificationValue + " saved to storage");
+                    break;
                 case MARKER_POSITION_REACHED:
 //                    Log.d(LOG_TAG, "!!!!!! Marker Reached " + aNotificationValue);
                     if (aNotificationValue != 0) {

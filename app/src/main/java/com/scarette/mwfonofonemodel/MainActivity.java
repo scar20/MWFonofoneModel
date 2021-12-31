@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private static String LOG_TAG = "MWENGINE"; // logcat identifier
-//    private static int PERMISSIONS_CODE = 8081981;
+    private static int PERMISSIONS_CODE = 8081981;
 
     /* public methods */
 
@@ -68,40 +68,40 @@ public class MainActivity extends AppCompatActivity {
         // these may not necessarily all be required for your use case (e.g. if you're not recording
         // from device audio inputs or reading/writing files) but are here for self-documentation
 
-//        if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ) {
-//            String[] PERMISSIONS = {
-//                    Manifest.permission.RECORD_AUDIO, // RECORD_AUDIO must be granted prior to engine.start()
-//                    Manifest.permission.READ_EXTERNAL_STORAGE,
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-//            };
-//            // Check if we have all the necessary permissions, if not: prompt user
-//            int permission = checkSelfPermission( Manifest.permission.RECORD_AUDIO );
-//            if ( permission == PackageManager.PERMISSION_GRANTED )
-//                init();
-//            else
-//                requestPermissions( PERMISSIONS, PERMISSIONS_CODE );
-//        }
+        if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ) {
+            String[] PERMISSIONS = {
+                    Manifest.permission.RECORD_AUDIO, // RECORD_AUDIO must be granted prior to engine.start()
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+            // Check if we have all the necessary permissions, if not: prompt user
+            int permission = checkSelfPermission( Manifest.permission.RECORD_AUDIO );
+            if ( permission == PackageManager.PERMISSION_GRANTED )
+                init();
+            else
+                requestPermissions( PERMISSIONS, PERMISSIONS_CODE );
+        }
 
 
         // We do not record hence we do not need permission
-        init();
+//        init();  // perhaps we need....
     }
 
-//    @TargetApi( Build.VERSION_CODES.M )
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode != PERMISSIONS_CODE) return;
-//        for (int i = 0; i < permissions.length; i++) {
-//            String permission = permissions[i];
-//            int grantResult = grantResults[i];
-//            if (permission.equals(Manifest.permission.RECORD_AUDIO) && grantResult == PackageManager.PERMISSION_GRANTED) {
-//                init();
-//            } else {
-//                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_CODE);
-//            }
-//        }
-//    }
+    @TargetApi( Build.VERSION_CODES.M )
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != PERMISSIONS_CODE) return;
+        for (int i = 0; i < permissions.length; i++) {
+            String permission = permissions[i];
+            int grantResult = grantResults[i];
+            if (permission.equals(Manifest.permission.RECORD_AUDIO) && grantResult == PackageManager.PERMISSION_GRANTED) {
+                init();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_CODE);
+            }
+        }
+    }
 
     /**
      * Called when the activity is destroyed. This also fires

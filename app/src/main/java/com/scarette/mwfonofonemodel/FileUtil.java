@@ -83,6 +83,7 @@ public class FileUtil {
         File dir = new File(sourcePath);
         String[] list = dir.list();
         int count = 0;
+        shortBuffers.clear();
         for (String name : list) {
 //            Log.d(LOG_TAG, "file in userDir: " + name);
             String key = "00" + count++;
