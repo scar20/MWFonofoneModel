@@ -37,7 +37,8 @@
         android:background="@color/black"
         android:orientation="vertical"
         android:rotation="-90"
-        android:translationX="80dp">
+        android:translationX="80dp"
+        android:visibility="gone">
 
         <SeekBar
             android:id="@+id/MixerVolumeSlider1"

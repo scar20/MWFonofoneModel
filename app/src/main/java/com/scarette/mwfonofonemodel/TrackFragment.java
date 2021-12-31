@@ -148,7 +148,7 @@ public class TrackFragment extends Fragment {
         Button piqueButton = view.findViewById( R.id.piqueButton );
         piqueButton.setOnTouchListener((view1, motionEvent) -> {
             int action = motionEvent.getAction();
-            if (action == MotionEvent.ACTION_DOWN) {
+            if (action == MotionEvent.ACTION_DOWN && !isPlaying) {
                 trackModel.setIsPlaying(true);
                 return true;
             }
