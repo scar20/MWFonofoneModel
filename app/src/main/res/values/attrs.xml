@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- EditableWaveformView -->
+    <declare-styleable name="EditableWaveformView">
+        <attr name="waveformRecordColor" format="color" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="selectionColor" format="color"/>
+        <attr name="playbackIndicatorColor" format="color" />
+    </declare-styleable>
+</resources>

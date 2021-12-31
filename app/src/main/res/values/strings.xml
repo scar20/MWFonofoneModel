@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">MWFonofoneModel</string>
+
+    <string name="app_help"> MWEngine Fonofone track model</string>
+
+    <string name="sample">Sample</string>
+    <string name="play_btn">Play</string>
+    <string name="pause_btn">Stop</string>
+    <string name="sample_forward"><![CDATA[--->]]></string>
+    <string name="sample_backward"><![CDATA[<---]]></string>
+    <string name="loop_btn">Loop</string>
+
+    <string name="sample_start">Sample start</string>
+    <string name="sample_end">Sample end</string>
+    <string name="speed">Speed</string>
+
+    <string name="filter_cutoff">Filter cutoff</string>
+    <string name="filter_q">Filter Q</string>
+
+    <string name="reverb">Reverb</string>
+
+    <string name="metronome">Metronome</string>
+
+    <string name="slider_volume">Output volume</string>
+
+
+    <string-array name="samples">
+        <item>Bach</item>
+        <item>Bonjour</item>
+        <item>Sin 1000Hz 0dB</item>
+        <item>Sin 1000Hz -3dB</item>
+    </string-array>
+
+</resources>
