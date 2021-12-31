@@ -630,10 +630,12 @@ public class MWEngineManager {
             }
 
             public void stop() {
-                isRunning = false;
-                List<Runnable> runnables = scheduler.shutdownNow();
-                task.cancel(true);
-                for (SampleEventRange ev : _sampleEvents) ev.stop();
+                if (isRunning) {
+                    isRunning = false;
+                    List<Runnable> runnables = scheduler.shutdownNow();
+                    task.cancel(true);
+                    for (SampleEventRange ev : _sampleEvents) ev.stop();
+                }
             }
 
             public void setTime(long time) {
