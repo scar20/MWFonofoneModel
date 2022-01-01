@@ -81,5 +81,6 @@
         android:scaleType="center"
         android:src="@drawable/ic_mixer_24px"
         android:tint="@color/default_selection"
-        tools:src="@drawable/ic_mixer_24px" />
+        tools:src="@drawable/ic_mixer_24px"
+        android:soundEffectsEnabled="false"/>
 </RelativeLayout>

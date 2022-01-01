@@ -3,6 +3,7 @@ package com.scarette.mwfonofonemodel;
 import android.Manifest;
 import android.annotation.TargetApi;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.LinearLayoutCompat;
@@ -10,12 +11,21 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import java.util.Vector;
 
@@ -102,6 +112,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // first parameter is the file for icon and second one is menu
+        getMenuInflater().inflate(R.menu.info_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        final InfoDialog dialog = InfoDialog.newInstance();
+        dialog.show(getSupportFragmentManager(), null);
+        return super.onOptionsItemSelected(item);
+    }
+
 
     /**
      * Called when the activity is destroyed. This also fires
