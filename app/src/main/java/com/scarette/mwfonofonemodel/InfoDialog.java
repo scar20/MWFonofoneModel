@@ -26,12 +26,6 @@ public class InfoDialog extends DialogFragment {
 
     public static final String LOG_TAG = "MWE_infoFragment";
 
-    AudioManager audioManager;
-
-
-    private TextView mContentView;
-
-
     public InfoDialog() {
     }
 
@@ -45,7 +39,6 @@ public class InfoDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(LOG_TAG, "onCreate(@Nullable Bundle savedInstanceState) called");
         setRetainInstance(true);
     }
 
@@ -57,9 +50,8 @@ public class InfoDialog extends DialogFragment {
 
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.info_dialog, null);
-        mContentView = view.findViewById(R.id.info_text);
-//        String info = getInfo();
-        mContentView.setText(getInfo());
+        TextView infoView = view.findViewById(R.id.info_text);
+        infoView.setText(getInfo());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert);
         builder.setView(view);
