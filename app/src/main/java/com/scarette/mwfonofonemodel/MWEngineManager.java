@@ -271,6 +271,8 @@ public class MWEngineManager {
             }
             oneshotHandler = new OneShotHandler();
 
+
+
             // metronome sample vector - maxMetroCount of samples divided in 4 sampled instrument
             // as an attempt to alleviate harshness and distortion in the playback when many samples
             // overlaps at high rate. But it doesn't look that is the problem...
