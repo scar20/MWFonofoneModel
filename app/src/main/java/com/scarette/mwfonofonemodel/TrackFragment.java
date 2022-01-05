@@ -105,7 +105,7 @@ public class TrackFragment extends Fragment {
         mReadPValue = view.findViewById(R.id.readP_value);
         mAudioEngine.getTrack(whichTrack).setPlaybackListener(new PlaybackListener() {
             @Override
-            public void onProgress(int buffer, int readP) {
+            public void onProgress(int readP) {
                 mReadPValue.setText(String.valueOf(readP));
                 mWaveformView.setMarkerPosition(readP);
             }
@@ -143,7 +143,13 @@ public class TrackFragment extends Fragment {
 
 
         Button playButton = view.findViewById(R.id.PlayPauseButton);
-        playButton.setOnClickListener(view12 -> trackModel.setIsPlaying(!isPlaying));
+        playButton.setOnTouchListener((view15, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                trackModel.setIsPlaying(!isPlaying);
+                return true;
+            }
+            return false;
+        });
 
         Button piqueButton = view.findViewById( R.id.piqueButton );
         piqueButton.setOnTouchListener((view1, motionEvent) -> {
@@ -159,7 +165,7 @@ public class TrackFragment extends Fragment {
             return false;
         });
 
-        // observe current playing state and reset UI on change
+        // observe current playing state and reset UI Play & Pique on change
         trackModel.getIsPlaying().observe(this, aBoolean -> {
             isPlaying = aBoolean;
             playButton.setActivated(aBoolean);
@@ -168,14 +174,26 @@ public class TrackFragment extends Fragment {
         });
 
         Button directionButton = view.findViewById( R.id.direction_button );
-        directionButton.setOnClickListener(view13 -> trackModel.setIsForward(!isForward));
+        directionButton.setOnTouchListener((view14, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                trackModel.setIsForward(!isForward);
+                return true;
+            }
+            return false;
+        });
         trackModel.getIsForward().observe(this, aBoolean -> {
             isForward = aBoolean;
             directionButton.setText( isForward ? R.string.sample_forward : R.string.sample_backward);
         });
 
         Button loopButton = view.findViewById( R.id.loop_button );
-        loopButton.setOnClickListener(view14 -> trackModel.setIsLooping(!isLooping));
+        loopButton.setOnTouchListener((view12, motionEvent) -> {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                trackModel.setIsLooping(!isLooping);
+                return true;
+            }
+            return false;
+        });
         trackModel.getIsLooping().observe(this, aBoolean -> {
             isLooping = aBoolean;
             loopButton.setActivated(isLooping);

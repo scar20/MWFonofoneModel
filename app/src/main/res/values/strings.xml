@@ -3,7 +3,7 @@
 
     <string name="app_help"> MWEngine Fonofone track model</string>
 
-    <string name="sample">Sample</string>
+    <string name="sample_selection">Sample selection</string>
     <string name="play_btn">Play</string>
     <string name="pause_btn">Stop</string>
     <string name="sample_forward"><![CDATA[--->]]></string>

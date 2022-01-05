@@ -2,11 +2,7 @@
     android:viewportHeight="24" android:viewportWidth="24"
     android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <path android:fillAlpha="0.333" android:fillColor="#000000" android:fillType="nonZero"
-        android:pathData="m7.9933,5.0605c-0.3337,0.0047 -0.5692,0.3289 -0.4706,0.6478l4.001,12.9995c0.1447,0.4708 0.8112,0.4708 0.956,0l3.9991,-12.9995c0.1502,-0.4966 -0.4618,-0.8651 -0.8305,-0.5001l-3.6467,3.6466 -3.6467,-3.6466c-0.0956,-0.0962 -0.2261,-0.1495 -0.3617,-0.1476z"
-        android:strokeColor="#00000000" android:strokeLineCap="butt"
-        android:strokeLineJoin="round" android:strokeWidth="1.05833328"/>
-    <path android:fillColor="#00000000" android:fillType="nonZero"
+    <path
         android:pathData="m7.9933,5.0605c-0.3337,0.0047 -0.5692,0.3289 -0.4706,0.6478l4.001,12.9995c0.1447,0.4708 0.8112,0.4708 0.956,0l3.9991,-12.9995c0.1502,-0.4966 -0.4618,-0.8651 -0.8305,-0.5001l-3.6467,3.6466 -3.6467,-3.6466c-0.0956,-0.0962 -0.2261,-0.1495 -0.3617,-0.1476z"
         android:strokeColor="#888888" android:strokeLineCap="butt"
         android:strokeLineJoin="round" android:strokeWidth="1.05833328"/>

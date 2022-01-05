@@ -236,7 +236,7 @@ public class MWEngineManager {
                 public Unit invoke(Long aLong) {
                     int bufPos = _sampleEvent.getPlaybackPosition();
                     int readPos = _sampleEvent.getReadPointer();
-                    mPlaybackListener.onProgress(bufPos, readPos);
+                    mPlaybackListener.onProgress(readPos);
                     return null;
                 }
             });

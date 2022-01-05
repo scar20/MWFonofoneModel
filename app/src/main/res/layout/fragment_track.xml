@@ -1,9 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    android:orientation="vertical">
+
+
+    <!-- sample selection -->
+
+    <LinearLayout
+        android:id="@+id/DriverSelection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/SampleSpinner"
+            style="@style/Widget.AppCompat.Spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
+            android:background="@android:drawable/btn_dropdown"
+            android:entries="@array/samples"
+            android:spinnerMode="dropdown" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
+            android:padding="8dip"
+            android:text="@string/sample_selection" />
+
+    </LinearLayout>
 
     <!-- WaveformView -->
 
@@ -13,14 +44,14 @@
         android:layout_height="72dp"
         android:layout_marginTop="1dp"
         app:backgroundColor="@color/colorPrimaryExtraLight"
+        app:mode="PLAYBACK"
         app:selectionColor="@color/default_selection"
         app:waveformColor="@color/default_waveform"
         app:waveformFillColor="@color/default_waveformFill"
-        app:waveformRecordColor="@color/default_record_waveform"
 
-        app:mode="PLAYBACK"/>
+        app:waveformRecordColor="@color/default_record_waveform" />
 
-    <!-- cursorVIew -->
+    <!-- cursor label -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,58 +81,49 @@
     </LinearLayout>
 
 
-    <!-- sample selection -->
+    <!-- play controls -->
 
     <LinearLayout
-        android:id="@+id/DriverSelection"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:orientation="horizontal"
-        >
-        <Spinner
-            android:id="@+id/SampleSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:drawable/btn_dropdown"
-            android:spinnerMode="dropdown"
-            android:entries="@array/samples"
-            />
+        android:layout_marginStart="16dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/PlayPauseButton"
             android:layout_width="48dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:foreground="@drawable/ic_session_tab_play_statelist_24px"
             android:foregroundGravity="clip_horizontal|center"
-            android:soundEffectsEnabled="false"/>
+            android:soundEffectsEnabled="false" />
 
         <Button
             android:id="@+id/piqueButton"
             android:layout_width="48dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:foreground="@drawable/pique_statelist_24"
             android:foregroundGravity="clip_horizontal|center"
-            android:soundEffectsEnabled="false"/>
+            android:soundEffectsEnabled="false" />
 
         <Button
             android:id="@+id/direction_button"
             android:layout_width="72dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:soundEffectsEnabled="false"
             android:text="@string/sample_forward"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:textStyle="bold"
-            android:soundEffectsEnabled="false"/>
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/loop_button"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:soundEffectsEnabled="false"
             android:text="@string/loop_btn"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textColor="@color/text_color_statelist"
-            android:textStyle="bold"
-            android:soundEffectsEnabled="false"/>
+            android:textStyle="bold" />
 
     </LinearLayout>
 
@@ -112,16 +134,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/sample_start"
-            android:progress="0"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/sample_start"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="0" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/sample_start" />
     </LinearLayout>
@@ -133,16 +159,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/sample_end"
-            android:progress="100"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/sample_end"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="100" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/sample_end" />
     </LinearLayout>
@@ -154,16 +184,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/speed"
-            android:progress="50"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/speed"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="50" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/speed" />
     </LinearLayout>
@@ -175,16 +209,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/FilterCutoffSlider"
-            android:progress="50"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/FilterCutoffSlider"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="50" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/filter_cutoff" />
     </LinearLayout>
@@ -197,16 +235,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/FilterQ"
-            android:progress="0"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/FilterQ"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="0" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/filter_q" />
     </LinearLayout>
@@ -221,24 +263,33 @@
         <SeekBar
             android:id="@+id/reverb"
             style="@android:style/Widget.SeekBar"
-            android:layout_width="200dip"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
+            android:layout_weight="0.5"
+            android:padding="4dp"
             android:progress="0" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/reverb_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:soundEffectsEnabled="false"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="7dip"
-            android:text="@string/reverb" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/reverb_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:soundEffectsEnabled="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:padding="7dip"
+                android:text="@string/reverb" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -252,23 +303,34 @@
         <SeekBar
             android:id="@+id/metronome"
             style="@android:style/Widget.SeekBar"
-            android:layout_width="200dip"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
+            android:layout_weight="0.5"
+            android:padding="4dp"
             android:progress="20" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/metronome_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:soundEffectsEnabled="false"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:orientation="horizontal">
 
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="7dip"
-            android:text="@string/metronome" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/metronome_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:soundEffectsEnabled="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:padding="7dip"
+                android:text="@string/metronome" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <!-- output volume -->
@@ -278,16 +340,20 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <SeekBar android:id="@+id/VolumeSlider"
-            android:progress="70"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:layout_width="200dip"
+        <SeekBar
+            android:id="@+id/VolumeSlider"
+            style="@android:style/Widget.SeekBar"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            style="@android:style/Widget.SeekBar"/>
+            android:layout_weight="0.5"
+            android:padding="4dp"
+            android:progress="70" />
 
-        <TextView android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.5"
             android:padding="7dip"
             android:text="@string/slider_volume" />
     </LinearLayout>
