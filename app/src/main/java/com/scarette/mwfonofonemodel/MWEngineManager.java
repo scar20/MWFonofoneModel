@@ -184,6 +184,7 @@ public class MWEngineManager {
         private SampledInstrument _metroSampler2;
         private SampledInstrument _metroSampler3;
         private SampledInstrument _metroSampler4;
+        private SampledInstrument _oneshotSampler;
         private ABiquadLPFilter lpFilter;
         private ABiquadHPFilter hpFilter;
         private Limiter flimiter;
@@ -202,6 +203,7 @@ public class MWEngineManager {
         private int curEndPoint;
         private float curPlaybackRate;
         private float lastReverbWet;
+        private float lastReverbDry;
         private float lastReverbSize;
 
         public boolean isForward = true;
@@ -250,6 +252,7 @@ public class MWEngineManager {
             _metroSampler2 = new SampledInstrument();
             _metroSampler3 = new SampledInstrument();
             _metroSampler4 = new SampledInstrument();
+            _oneshotSampler = new SampledInstrument();
 
             mainChannel = new ChannelGroup();
             _engine.addChannelGroup(mainChannel);
@@ -258,16 +261,16 @@ public class MWEngineManager {
             _sampleEvent = new SampleEventRange(_sampler);
             _sampleEvent.setID(this.hashCode()); // associate this id to that sample
 
+            _sampler.getAudioChannel().setVolume(0.7f); // set volume here
+            mainChannel.addAudioChannel(_sampler.getAudioChannel());
+
             // oneshot sample
             for (int i=0; i<maxMetroCount; i++) {
-                final  SampleEventRange ev = new SampleEventRange(_sampler);
+                final  SampleEventRange ev = new SampleEventRange(_oneshotSampler);
                 _oneShotEvents.add(ev);
             }
             oneshotHandler = new OneShotHandler();
 
-
-            _sampler.getAudioChannel().setVolume(0.7f); // set volume here
-            mainChannel.addAudioChannel(_sampler.getAudioChannel());
 
 
             // metronome sample vector - maxMetroCount of samples divided in 4 sampled instrument
@@ -323,10 +326,10 @@ public class MWEngineManager {
             // Reverb
             reverbHandler = new ReverbHandler();
             reverb = new ReverbSM();
-            reverb.setDamp(0.88f);
+            reverb.setDamp(0.66f);
             reverb.setWidth(1f);
             reverb.setWet(0f);
-            reverb.setDry(0.5f);
+            reverb.setDry(0.7f);
             reverb.setRoomSize(0.6f);
             mainChannel.getProcessingChain().addProcessor(reverb);
 
@@ -525,9 +528,13 @@ public class MWEngineManager {
         public void setReverbOn(boolean isOn) {
             isReverbOn = isOn;
             if (isOn) {
+                reverb.setDry(lastReverbDry);
                 reverb.setWet(lastReverbWet);
                 reverb.setRoomSize(lastReverbSize);
-            } else reverb.setWet(0f);
+            } else {
+                reverb.setDry(0.7f);
+                reverb.setWet(0f);
+            }
         }
 
         public void setMetroRate(float progress) {
@@ -605,10 +612,13 @@ public class MWEngineManager {
         private class ReverbHandler {
 
             protected void setReverbMix(float progress) {
-                lastReverbWet = progress;
+                float sqrtProgress = (float)Math.sqrt(progress);
+                lastReverbDry = ((1 - sqrtProgress) * 0.5f) + 0.2f;
+                lastReverbWet = sqrtProgress * 0.5f;
                 lastReverbSize = (progress * 0.333f) + 0.666f;
                 if (isReverbOn) {
-                    reverb.setWet(progress);
+                    reverb.setDry(lastReverbDry);
+                    reverb.setWet(lastReverbWet);
                     reverb.setRoomSize(lastReverbSize);
                 }
             }
