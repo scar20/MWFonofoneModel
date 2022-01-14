@@ -17,12 +17,14 @@ import java.nio.ShortBuffer;
 import java.util.Vector;
 
 import nl.igorski.mwengine.core.JavaUtilities;
+import nl.igorski.mwengine.core.SampleManager;
 
 public class FileUtil {
 
     private static String LOG_TAG = "MWENGINE_FILE"; // logcat identifier
 
     public static Vector<short[]> shortBuffers = new Vector<>();
+    public static Vector<String> filePaths = new Vector<>();
 
     public static void installAssets(Application application) {
         String rootDir = "samples";
@@ -86,8 +88,10 @@ public class FileUtil {
         shortBuffers.clear();
         for (String name : list) {
 //            Log.d(LOG_TAG, "file in userDir: " + name);
-            String key = "00" + count++;
-            JavaUtilities.createSampleFromFile(key, sourcePath + File.separator + name);
+//            String key = "00" + count++;
+//            JavaUtilities.createSampleFromFile(key, sourcePath + File.separator + name);
+            String filePath = sourcePath + File.separator + name;
+            filePaths.add(filePath);
             File f = new File(sourcePath + File.separator + name);
             short[] buf;
             try {

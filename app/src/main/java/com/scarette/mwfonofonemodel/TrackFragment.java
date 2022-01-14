@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -21,6 +22,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.Objects;
+
+import nl.igorski.mwengine.core.JavaUtilities;
+import nl.igorski.mwengine.core.SampleManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -113,17 +117,26 @@ public class TrackFragment extends Fragment {
             @Override
             public void onCompletion() {
 //                Log.d(LOG_TAG, "//////// Completed ////////");
-                Objects.requireNonNull(getActivity()).runOnUiThread(trackModel::stopPlaying);
+                Objects.requireNonNull(getActivity()).runOnUiThread(() -> trackModel.setIsPlaying(false));
                 // will call engine track stop
             }
         });
 
-        // set waveformview display
+        Spinner spinner =  view.findViewById( R.id.SampleSpinner);
+        spinner.setOnItemSelectedListener( new SoundChangeHandler() );
 
-        trackModel.getSampleName().observe(this, s -> {
-            short[] buf = FileUtil.shortBuffers.get(Integer.parseInt(s));
-            mWaveformView.setSamples(buf);
+        // set spinner and waveformview display
+
+        trackModel.getSampleSelection().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                short[] buf = FileUtil.shortBuffers.get(integer);
+                mWaveformView.setSamples(buf);
+//                mAudioEngine.getTrack(whichTrack).setSample(String.valueOf(whichTrack), integer);
+                spinner.setSelection(integer);
+            }
         });
+
         mWaveformView.setWaveformListener(new EditableWaveformView.WaveformListener() {
             @Override
             public void onSelectionStartChanged(float start) {
@@ -136,10 +149,6 @@ public class TrackFragment extends Fragment {
         });
         trackModel.getSampleStart().observe(this, mWaveformView::setSelectionStart);
         trackModel.getSampleEnd().observe(this, mWaveformView::setSelectionEnd);
-
-
-        Spinner spinner =  view.findViewById( R.id.SampleSpinner);
-        spinner.setOnItemSelectedListener( new SoundChangeHandler() );
 
 
         Button playButton = view.findViewById(R.id.PlayPauseButton);
@@ -264,12 +273,13 @@ public class TrackFragment extends Fragment {
 
     private class SoundChangeHandler implements AdapterView.OnItemSelectedListener {
         public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+            Log.d(LOG_TAG, "//////// SoundChangeHandler pos: " + pos);
             String selectedValue = parent.getItemAtPosition(pos).toString();
             String name = "";
             if (selectedValue.toLowerCase().equals("bach")) {
-                name = "000";
-            } else if (selectedValue.toLowerCase().equals("bonjour")) {
                 name = "001";
+            } else if (selectedValue.toLowerCase().equals("bonjour")) {
+                name = "000";
             }
             else if (selectedValue.toLowerCase().equals("sin 1000hz 0db")) {
                 name = "002";
@@ -278,7 +288,8 @@ public class TrackFragment extends Fragment {
                 name = "003";
             }
             if ( name != "") {
-                trackModel.setSampleName(name);
+                trackModel.setSampleSelection(pos);
+//                trackModel.setSampleName(name);
                 trackModel.resetSampleLength();
                 mWaveformView.setMarkerPosition(mAudioEngine.getTrack(whichTrack).getSampleStart());
             }

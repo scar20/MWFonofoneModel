@@ -2,38 +2,19 @@ package com.scarette.mwfonofonemodel;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.AudioTrack;
 import android.util.Log;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import nl.igorski.mwengine.MWEngine;
-import nl.igorski.mwengine.core.ABiquadHPFilter;
-import nl.igorski.mwengine.core.ABiquadLPFilter;
-import nl.igorski.mwengine.core.BaseAudioEvent;
-import nl.igorski.mwengine.core.ChannelGroup;
-import nl.igorski.mwengine.core.Drivers;
-import nl.igorski.mwengine.core.JavaUtilities;
-import nl.igorski.mwengine.core.LPFHPFilter;
-import nl.igorski.mwengine.core.Limiter;
-import nl.igorski.mwengine.core.Notifications;
-import nl.igorski.mwengine.core.ProcessingChain;
-import nl.igorski.mwengine.core.ReverbSM;
-import nl.igorski.mwengine.core.SWIGTYPE_p_AudioBuffer;
-import nl.igorski.mwengine.core.SampleEvent;
-
-import nl.igorski.mwengine.core.SampleEventRange;
-import nl.igorski.mwengine.core.SampleManager;
-import nl.igorski.mwengine.core.SampledInstrument;
-import nl.igorski.mwengine.core.SequencerController;
-
+import nl.igorski.mwengine.core.*;
 
 
 public class MWEngineManager {
@@ -123,7 +104,7 @@ public class MWEngineManager {
         _limiter = new Limiter();
 
         masterBus.addProcessor(_lpfhpf);
-        masterBus.addProcessor(_limiter);
+//        masterBus.addProcessor(_limiter);
 
 
         // STEP 2 : start your engine!
@@ -174,17 +155,15 @@ public class MWEngineManager {
     protected class Track extends SampledInstrument {
 
         private Vector<SampleEventRange> _sampleEvents;
-        private Vector<SampleEventRange> _oneShotEvents;
         private SampleEventRange _sampleEvent;
+
+/*        private Vector<SampleEvent> _sampleEvents;
+        private SampleEvent _sampleEvent;*/
         private int _sampleLenght;
         private short[] shortBufffer;
 
         private SampledInstrument _sampler;
-        private SampledInstrument _metroSampler1;
-        private SampledInstrument _metroSampler2;
-        private SampledInstrument _metroSampler3;
-        private SampledInstrument _metroSampler4;
-        private SampledInstrument _oneshotSampler;
+        private Limiter slimiter;
         private ABiquadLPFilter lpFilter;
         private ABiquadHPFilter hpFilter;
         private Limiter flimiter;
@@ -212,104 +191,71 @@ public class MWEngineManager {
         public boolean isLooping = false;
         private boolean isPlaying = false;
 
-        private int maxMetroCount = 24;
+        private boolean isSet = false;
 
-        private Metronome metronome = new Metronome();
+        private int maxMetroCount = 32;
+        private int smillis;
 
-        public SampleEvent oneShot;
+        private Metronome metronome;
+
 
         private PlaybackListener mPlaybackListener;
         private SyncedRenderer renderer;
+        private SyncedRenderer levelMonitor;
 
 
         // constructor
         Track() {
             // vector for metronome and oneShot event
-            _sampleEvents = new Vector<SampleEventRange>();
-            _oneShotEvents = new Vector<>(); // for testing
+//            _metroEvents = new Vector<>();
+//            _oneShotEvents = new Vector<>(); // for testing
 
-            // put an hash id if this track to receive notification when sample stop
+            // put an hash id of this track to receive notification when sample stop
             tracksMap.put(this.hashCode(), this);
 
             // renderer for display playback updates - maybe replaced by call in waveformView onDraw()
             // play() & stop() start/stop the renderer
-            renderer = new SyncedRenderer(new Function1<Long, Unit>() {
-                @Override
-                public Unit invoke(Long aLong) {
-                    int bufPos = _sampleEvent.getPlaybackPosition();
-                    int readPos = _sampleEvent.getReadPointer();
-                    mPlaybackListener.onProgress(readPos);
-                    return null;
-                }
+            renderer = new SyncedRenderer(aLong -> {
+                int readPos = _sampleEvent.getReadPointer();
+                mPlaybackListener.onProgress(readPos);
+                return null;
             });
 
+//            levelMonitor = new SyncedRenderer(new Function1<Long, Unit>() {
+//                @Override
+//                public Unit invoke(Long aLong) {
+//                    float dbspl = LevelUtility.dBSPL(_oneshotSampler.getAudioChannel(), 0);
+//                    Log.d(LOG_TAG, "dBSPL: " + dbspl);
+//                    float rms = LevelUtility.RMS(oneShotChannel, 0);
+//                    Log.d(LOG_TAG, "RMS: " + rms);
+//                    float lin = LevelUtility.linear(_oneshotSampler.getAudioChannel(), 0);
+//                    Log.d(LOG_TAG, "linear: " + lin);
+//                    double max = LevelUtility.max(_oneshotSampler.getAudioChannel(), 0);
+//                    Log.d(LOG_TAG, "max: " + max);
+//                    return null;
+//                }
+//            });
 
-            // STEP 2 : let's create some instruments =D
 
-            // Real-time sample events
+            // sample set up, main sample is sample[0]
+            slimiter = new Limiter(0.5f, 1f, 1f);
+            _sampleEvents = new Vector<>();
             _sampler = new SampledInstrument();
-            _metroSampler1 = new SampledInstrument();
-            _metroSampler2 = new SampledInstrument();
-            _metroSampler3 = new SampledInstrument();
-            _metroSampler4 = new SampledInstrument();
-            _oneshotSampler = new SampledInstrument();
-
-            mainChannel = new ChannelGroup();
-            _engine.addChannelGroup(mainChannel);
-
-            // main sample
-            _sampleEvent = new SampleEventRange(_sampler);
-            _sampleEvent.setID(this.hashCode()); // associate this id to that sample
-
-            _sampler.getAudioChannel().setVolume(0.7f); // set volume here
-            mainChannel.addAudioChannel(_sampler.getAudioChannel());
-
-            // oneshot sample
             for (int i=0; i<maxMetroCount; i++) {
-                final  SampleEventRange ev = new SampleEventRange(_oneshotSampler);
-                _oneShotEvents.add(ev);
-            }
-            oneshotHandler = new OneShotHandler();
-
-
-
-            // metronome sample vector - maxMetroCount of samples divided in 4 sampled instrument
-            // as an attempt to alleviate harshness and distortion in the playback when many samples
-            // overlaps at high rate. But it doesn't look that is the problem...
-            int halfCount = maxMetroCount / 2;
-            SampledInstrument sampler;
-            for (int i = 0; i < maxMetroCount; i++) {
-                if (i < halfCount) {
-                    if (i < halfCount/2 ) sampler = _metroSampler1;
-                    else sampler = _metroSampler2;
-                } else {
-                    if (i < halfCount + (halfCount/2)) sampler = _metroSampler3;
-                    else sampler = _metroSampler4;
-                }
-                final SampleEventRange ev = new SampleEventRange(sampler);
+                final  SampleEventRange ev = new SampleEventRange(_sampler);
+//                final  SampleEvent ev = new SampleEvent(_sampler);
                 _sampleEvents.add(ev);
             }
+            _sampler.getAudioChannel().getProcessingChain().addProcessor(slimiter);
+            // keep a pointer to main sample
+            _sampleEvent = _sampleEvents.get(0);
+            _sampleEvent.setID(this.hashCode()); // associate this id to that sample
 
+            metronome = new Metronome();
 
-            // add a limiter to prevent clipping at the sample level - mainly to overcome metronome add-up
-            sLimiter = new Limiter(5, 50, 0.5f, true);
-            sLimiter.setSoftKnee(true);
-            _metroSampler1.getAudioChannel().getProcessingChain().addProcessor(sLimiter);
-            _metroSampler1.getAudioChannel().setVolume(0.7f);
-            _metroSampler2.getAudioChannel().getProcessingChain().addProcessor(sLimiter);
-            _metroSampler2.getAudioChannel().setVolume(0.7f);
-            _metroSampler3.getAudioChannel().getProcessingChain().addProcessor(sLimiter);
-            _metroSampler3.getAudioChannel().setVolume(0.7f);
-            _metroSampler4.getAudioChannel().getProcessingChain().addProcessor(sLimiter);
-            _metroSampler4.getAudioChannel().setVolume(0.7f);
-            mainChannel.addAudioChannel(_metroSampler1.getAudioChannel());
-            mainChannel.addAudioChannel(_metroSampler2.getAudioChannel());
-            mainChannel.addAudioChannel(_metroSampler3.getAudioChannel());
-            mainChannel.addAudioChannel(_metroSampler4.getAudioChannel());
-
+            oneshotHandler = new OneShotHandler();
 
             // Fonofilter
-            filterHandler = new FilterHandler();
             lpFilter = new ABiquadLPFilter(
                     10000, .0f, //( float ) ( Math.sqrt( 1 ) / 2 ),
                     20, 20000, OUTPUT_CHANNELS);
@@ -318,23 +264,24 @@ public class MWEngineManager {
                     20, 20000, OUTPUT_CHANNELS);
             flimiter = new Limiter(50f, 25f,
                     0.5f, true);
-            mainChannel.getProcessingChain().addProcessor(lpFilter);
-            mainChannel.getProcessingChain().addProcessor(hpFilter);
-            mainChannel.getProcessingChain().addProcessor(flimiter);
-            filterHandler.setFilterCutoff(0.5f); // init cutoff until finding why its not set by viewmodel
+            filterHandler = new FilterHandler();
+            _sampler.getAudioChannel().getProcessingChain().addProcessor(lpFilter);
+            _sampler.getAudioChannel().getProcessingChain().addProcessor(hpFilter);
+            _sampler.getAudioChannel().getProcessingChain().addProcessor(flimiter);
+
 
             // Reverb
-            reverbHandler = new ReverbHandler();
             reverb = new ReverbSM();
-            reverb.setDamp(0.66f);
-            reverb.setWidth(1f);
-            reverb.setWet(0f);
-            reverb.setDry(0.7f);
-            reverb.setRoomSize(0.6f);
-            mainChannel.getProcessingChain().addProcessor(reverb);
+            reverbHandler = new ReverbHandler();
 
-            // assign a sample
-            // this is assigned through TrackViewModel
+            mainChannel = new ChannelGroup();
+            mainChannel.addAudioChannel(_sampler.getAudioChannel());
+//            mainChannel.getProcessingChain().addProcessor(reverb);
+
+            _engine.addChannelGroup(mainChannel);
+
+            isSet = true;
+
         }
 
         // for playback display updates
@@ -347,22 +294,40 @@ public class MWEngineManager {
         }
 
         protected void flushTrack() {
+
+            // if track haven't been created yet, return
+            if (!isSet) {
+                Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " not set do not flush !!!!!!");
+                return;
+            }
+
+            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " FLUSH !!!!!!");
+
+            _engine.removeChannelGroup(mainChannel);
+            _engine.stop();
+            mainChannel.removeAudioChannel(_sampler.getAudioChannel());
+            mainChannel.getProcessingChain().reset();
             // calling 'delete()' on a BaseAudioEvent invokes the
             // native layer destructor (and removes it from the sequencer)
 
+            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleEvent to flush: " + _sampleEvents.size());
             for (final BaseAudioEvent event : _sampleEvents) {
                 event.getInstrument().delete();
                 event.delete();
             }
+
             _sampleEvent.delete();
 
             // clear Vectors so all references to the events are broken
 
             _sampleEvents.clear();
+            _sampleEvents = null;
 
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " metroEvent after clear: " + _metroEvents.size());
             // detach all processors from engine's master bus
 
-            _engine.getMasterBusProcessors().reset();
+            mainChannel.delete();
+            mainChannel = null;
 
             // calling 'delete()' on all instruments invokes the native layer destructor
             // (and frees memory allocated to their resources, e.g. AudioChannels, Processors)
@@ -373,10 +338,7 @@ public class MWEngineManager {
 
             _sampler = null;
 
-            _metroSampler1 = null;
-            _metroSampler2 = null;
-            _metroSampler3 = null;
-            _metroSampler4 = null;
+            _sampleEvent = null;
 
             // and these (garbage collection invokes native layer destructors, so we'll let
             // these processors be cleared lazily)
@@ -385,10 +347,19 @@ public class MWEngineManager {
             // added just to make sure
             _limiter = null;
 
-            sLimiter = null;
+
             lpFilter = null;
             hpFilter = null;
             flimiter = null;
+
+            reverb.delete();
+            reverb = null;
+            slimiter.delete();
+            slimiter = null;
+
+            metronome.scheduler.shutdownNow();
+            metronome = null;
+
         }
 
         public SampleEventRange getCurSample() {
@@ -399,7 +370,8 @@ public class MWEngineManager {
             return curStartPoint;
         }
 
-        public void setSample(String sampleName) {
+        // tag: whichtrack, sampleselect: filePath[i]
+        public void setSample(String tag, int sampleSelection) {
 
             if (isPlaying) {
                 isPlaying = false;
@@ -407,110 +379,110 @@ public class MWEngineManager {
                 if (isMetroOn) metronome.stop();
             }
 
-            SWIGTYPE_p_AudioBuffer sample;
-            curSampleName = sampleName;
-            sample = SampleManager.getSample(curSampleName);
-            _sampleLenght = SampleManager.getSampleLength(curSampleName);
-            _sampleEvent.setSample(sample);
+//            _sampler.getAudioChannel().getProcessingChain().reset();
+//            _sampler.getAudioChannel().getProcessingChain().addProcessor(_limiter);
+//            if (isReverbOn) {
+//                _sampler.getAudioChannel().getProcessingChain().addProcessor(reverb);
+//            }
+
+//            flushTrack();
+
+            curSampleName = tag;
+
+            String filePath = FileUtil.filePaths.get(sampleSelection);
+            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
+            if (SampleManager.hasSample(tag))
+                SampleManager.removeSample(tag, true);
+            JavaUtilities.createSampleFromFile(tag, filePath);
+            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " haveSample: " + SampleManager.hasSample(tag));
 
             // this *MUST* be placed before setBufferRangeStart/End otherwise segfault at end of loop
             // - strangely, it do not happen if sample is backward. Need more investigation since
             // there have been changes in SampleEvent
 //            _sampleEvent.setRangeBasedPlayback(true); // keep it as a reminder
-            _sampleEvent.setBufferRangeStart(curStartPoint);
-            _sampleEvent.setBufferRangeEnd(curEndPoint);
-            _sampleEvent.setPlaybackRate(curPlaybackRate);
-            _sampleEvent.setLoopeable(isLooping, 0);
-            _sampleEvent.setPlaybackDirection(isForward);
 
 
+            // needed for sample start/end progress setting
+            _sampleLenght = SampleManager.getSampleLength(curSampleName);
+            // get time in millis for probable usage in metronome
+            smillis = BufferUtility.bufferToMilliseconds(_sampleLenght, SAMPLE_RATE);
+
+//            for (SampleEvent ev : _sampleEvents) {
             for (SampleEventRange ev : _sampleEvents) {
-                ev.setSample(sample);
+                ev.setSample(SampleManager.getSample(curSampleName));
                 ev.setBufferRangeStart(curStartPoint);
                 ev.setBufferRangeEnd(curEndPoint);
                 ev.setPlaybackRate(curPlaybackRate);
                 ev.setPlaybackDirection(isForward);
                 ev.setLoopeable(false, 0);
-                ev.setVolume(0.7f);
             }
+            // reset the pointer to main sample and allow looping setting
+            _sampleEvent = _sampleEvents.get(0);
+            _sampleEvent.setLoopeable(isLooping, 0);
+            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + "  !!!!!! _sampleEvents size:" + _sampleEvents.size());
 
-            for (SampleEventRange ev : _oneShotEvents) {
-                ev.setSample(sample);
-                ev.setBufferRangeStart(curStartPoint);
-                ev.setBufferRangeEnd(curEndPoint);
-                ev.setPlaybackRate(curPlaybackRate);
-                ev.setPlaybackDirection(isForward);
-                ev.setLoopeable(false, 0);
-                ev.setVolume(0.7f);
-            }
         }
 
         public void play() {
-
             isPlaying = true;
-            _sampleEvent.play();
+            if (isMetroOn) {
+                metronome.start(); // start from sampleEvents[0] thus include _sampleEvent
+            } else _sampleEvent.play();
             if (mPlaybackListener != null) {
                 renderer.start();
-            }
-            if (isMetroOn) {
-                metronome.start();
             }
         }
 
         public void stop() {
             isPlaying = false;
             if (isMetroOn) {
-                metronome.stop();
+                metronome.stop(); // stop all events but event[0]
             }
-            _sampleEvent.stop();
+            _sampleEvent.stop(); // must be stopped separately
             renderer.stop();
         }
 
         public void oneShotTrigger() {
             oneshotHandler.trigger();
+//            levelMonitor.start();
         }
 
         public void oneShotStop() {
-            for (SampleEventRange ev : _oneShotEvents) ev.stop();
+            for (SampleEventRange ev : _sampleEvents) ev.stop();
+//            for (SampleEvent ev : _sampleEvents) ev.stop();
+//            levelMonitor.stop();
         }
 
         public void setDirection(boolean direction) {
             isForward = direction;
-            _sampleEvent.setPlaybackDirection(isForward);
-
             for (SampleEventRange ev : _sampleEvents) ev.setPlaybackDirection(isForward);
-            for (SampleEventRange ev : _oneShotEvents) ev.setPlaybackDirection(isForward);
         }
 
         public void setLooping(boolean looping) {
             isLooping = looping;
+            // only main sample is allowed to loop
             _sampleEvent.setLoopeable(isLooping, 0);
         }
 
         public void setSampleStart(float progress) {
             curStartPoint = (int) (progress * (_sampleLenght - 1));
-            _sampleEvent.setBufferRangeStart(curStartPoint);
-
             for (SampleEventRange ev : _sampleEvents) ev.setBufferRangeStart(curStartPoint);
-            for (SampleEventRange ev : _oneShotEvents) ev.setBufferRangeStart(curStartPoint);
+//            for (SampleEvent ev : _sampleEvents) ev.setBufferRangeStart(curStartPoint);
         }
 
         public void setSampleEnd(float progress) {
             curEndPoint = (int) (progress * (_sampleLenght - 1));
-            _sampleEvent.setBufferRangeEnd(curEndPoint);
-
             for (SampleEventRange ev : _sampleEvents) ev.setBufferRangeEnd(curEndPoint);
-            for (SampleEventRange ev : _oneShotEvents) ev.setBufferRangeEnd(curEndPoint);
+//            for (SampleEvent ev : _sampleEvents) ev.setBufferRangeEnd(curEndPoint);
         }
 
         public void setSampleSpeed(float progress) {
             float value = (progress * 4f) - 2f;
             float factor = (float) Math.pow(2.0, value);
             curPlaybackRate = factor;
-            _sampleEvent.setPlaybackRate(factor);
-
             for (SampleEventRange ev : _sampleEvents) ev.setPlaybackRate(factor);
-            for (SampleEventRange ev : _oneShotEvents) ev.setPlaybackRate(factor);
+//            for (SampleEvent ev : _sampleEvents) ev.setPlaybackRate(factor);
+
         }
 
         public void setFilterCutoff(float progress) {
@@ -531,9 +503,11 @@ public class MWEngineManager {
                 reverb.setDry(lastReverbDry);
                 reverb.setWet(lastReverbWet);
                 reverb.setRoomSize(lastReverbSize);
+                _sampler.getAudioChannel().getProcessingChain().addProcessor(reverb);
             } else {
-                reverb.setDry(0.7f);
-                reverb.setWet(0f);
+//                reverb.setDry(0.7f);
+//                reverb.setWet(0f);
+                _sampler.getAudioChannel().getProcessingChain().removeProcessor(reverb);
             }
         }
 
@@ -550,7 +524,7 @@ public class MWEngineManager {
             isMetroOn = metroOn;
             if (isMetroOn) {
                 if (isPlaying) {
-                    metronome.start(); // only start if playing
+                    metronome.startAfter(); // only start if playing
                 }
             } else {
                 metronome.stop();
@@ -558,11 +532,7 @@ public class MWEngineManager {
         }
 
         public void setVolume(float progress) {
-            _sampler.getAudioChannel().setVolume(progress);
-            _metroSampler1.getAudioChannel().setVolume(progress);
-            _metroSampler2.getAudioChannel().setVolume(progress);
-            _metroSampler3.getAudioChannel().setVolume(progress);
-            _metroSampler4.getAudioChannel().setVolume(progress);
+            mainChannel.setVolume(progress);
         }
 
         private class FilterHandler {
@@ -613,8 +583,8 @@ public class MWEngineManager {
 
             protected void setReverbMix(float progress) {
                 float sqrtProgress = (float)Math.sqrt(progress);
-                lastReverbDry = ((1 - sqrtProgress) * 0.5f) + 0.2f;
-                lastReverbWet = sqrtProgress * 0.5f;
+                lastReverbDry = ((1 - sqrtProgress) * 0.3f) + 0.2f;
+                lastReverbWet = sqrtProgress * 0.3f;
                 lastReverbSize = (progress * 0.333f) + 0.666f;
                 if (isReverbOn) {
                     reverb.setDry(lastReverbDry);
@@ -625,53 +595,71 @@ public class MWEngineManager {
         }
 
         private class Metronome {
-            private ScheduledThreadPoolExecutor scheduler;
+
+            private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
             ScheduledFuture<?> task;
             private long delay = 1500;
             private int count = 0;
             private boolean isRunning = false;
 
+            public void setTime(long time) {
+                delay = time;
+            }
+            public boolean isRunning() { return isRunning; }
 
             public void start() {
-                count = 0;
+                count = 0; // for when metro already on, start from main sample
                 isRunning = true;
-                scheduler = new ScheduledThreadPoolExecutor(0);
-                scheduler.setRemoveOnCancelPolicy(true);
+                cycle();
+            }
+            // First sample (main) already started; start subsequent samples
+            public void startAfter() { // metro switched on after sample already playing
+                count = 1; // always start from 2d sample, first is main sample already playing
+                isRunning = true;
                 cycle();
             }
 
             public void stop() {
                 if (isRunning) {
                     isRunning = false;
-                    List<Runnable> runnables = scheduler.shutdownNow();
-                    task.cancel(true);
-                    for (SampleEventRange ev : _sampleEvents) ev.stop();
+                    if(task != null) task.cancel(true);
+                    cycle();
                 }
             }
 
-            public void setTime(long time) {
-                delay = time;
-            }
-
             public void cycle() {
-                _sampleEvents.get(count).play(); // pointers are reset on play
-
-                task = scheduler.schedule(() -> {
+                if (isRunning) {
+//                Log.d(LOG_TAG, "count: " + count);
+                    _sampleEvents.get(count).play(); // pointers are reset on play
                     count++;
                     count = count % maxMetroCount;
-                    cycle();
-                }, delay, TimeUnit.MILLISECONDS);
+                    task = scheduler.schedule(this::cycle, delay, TimeUnit.MILLISECONDS);
+                } else {
+                    if(task != null) task.cancel(true); // maybe overcautious...
+//                for (SampleEvent ev : _sampleEvents) ev.stop();
+                    for (int i = 1; i < maxMetroCount; i++) { // leave main sample alone
+                        _sampleEvents.get(i).stop();
+                    }
+                }
             }
 
-            // curRangeInMillis / cycle time = num of repeat
-            // if cycle time < thresh apply attenuation thresh time - min att to min time - max att
+            // attenuation scheme
+            // curRangeInMillis / cycle time = num of overlap
+            // if overlap > thresh apply attenuation overlap * attenuation
+            // max overlap = maxSampleCount
+            public void calcOverlap() {
+                float overlap = smillis / (float)delay;
+                Log.d(LOG_TAG, "sample millis: " + smillis + " cycle time: " + delay + " overlap: " + overlap);
+            }
 
         }
+
+
 
         private class OneShotHandler {
             private int count = 0;
             public void trigger() {
-                _oneShotEvents.get(count++).play();
+                _sampleEvents.get(count++).play();
                 count = count % maxMetroCount;
             }
         }
@@ -696,6 +684,7 @@ public class MWEngineManager {
 
         // call flushTrack on each tracks
         for (Track t : tracks) t.flushTrack();
+        _engine.getMasterBusProcessors().reset();
 
         // flush sample memory allocated in the SampleManager
         SampleManager.flushSamples();

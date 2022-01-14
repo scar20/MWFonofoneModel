@@ -36,7 +36,8 @@ public class TracksViewModel extends ViewModel {
         }
 
         public void setInitialValue() {
-            setSampleName("000");
+//            setSampleName("001");
+            setSampleSelection(1);
             setSampleStart(0.0f);
             setSampleEnd(1.0f);
             setSampleSpeed(0.5f);
@@ -47,18 +48,37 @@ public class TracksViewModel extends ViewModel {
             setVolume(0.7f);
         }
 
+        private void resetValues() {
+            setSampleStart(sampleStart.getValue());
+            setSampleEnd(sampleEnd.getValue());
+            setSampleSpeed(sampleSpeed.getValue());
+            setFilterCutoff(filterCutoff.getValue());
+            setFilterResonance(filterResonance.getValue());
+            setReverb(reverb.getValue());
+            setMetroRate(metroRate.getValue());
+            setVolume(volume.getValue());
+        }
+
         public void resetSampleLength() {
             setSampleStart(sampleStart.getValue());
             setSampleEnd(sampleEnd.getValue());
         }
 
         // for androfone/fonofone
-        private final MutableLiveData<String> sampleName = new MutableLiveData<>("000");
-        public LiveData<String> getSampleName() { return sampleName; }
-        public void setSampleName(String sampleName) {
-            this.sampleName.setValue(sampleName);
-            audioTrack.setSample(sampleName);
+        private final MutableLiveData<Integer> sampleSelection = new MutableLiveData<>(0);
+        public LiveData<Integer> getSampleSelection() { return sampleSelection; }
+        public void setSampleSelection(int sampleSelection) {
+            this.sampleSelection.setValue(sampleSelection);
+            audioTrack.setSample(String.valueOf(id), sampleSelection);
+            resetValues();
         }
+
+//        private final MutableLiveData<String> sampleName = new MutableLiveData<>("001");
+//        public LiveData<String> getSampleName() { return sampleName; }
+//        public void setSampleName(String sampleName) {
+//            this.sampleName.setValue(sampleName);
+//            audioTrack.setSample(sampleName);
+//        }
 
 
         private final MutableLiveData<Boolean> isPlaying = new MutableLiveData<>(false);
