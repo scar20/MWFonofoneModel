@@ -313,11 +313,11 @@ public class MWEngineManager {
 
             // if track haven't been created yet, return
             if (!isSet) {
-                Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " not set do not flush !!!!!!");
+//                Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " not set do not flush !!!!!!");
                 return;
             }
 
-            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " FLUSH !!!!!!");
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " FLUSH !!!!!!");
 
             _engine.removeChannelGroup(mainChannel);
             _engine.stop();
@@ -326,7 +326,7 @@ public class MWEngineManager {
             // calling 'delete()' on a BaseAudioEvent invokes the
             // native layer destructor (and removes it from the sequencer)
 
-            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleEvent to flush: " + _sampleEvents.size());
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleEvent to flush: " + _sampleEvents.size());
             for (final BaseAudioEvent event : _sampleEvents) {
                 event.getInstrument().delete();
                 event.delete();
@@ -446,7 +446,7 @@ public class MWEngineManager {
             } else {
                 _sampleEvent.play();
                 samplePlayCount++; // increment count, sample[0] playing
-                Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
+//                Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
             }
             if (mPlaybackListener != null) {
                 renderer.start();
@@ -461,7 +461,7 @@ public class MWEngineManager {
             _sampleEvent.stop(); // must be stopped separately
             renderer.stop();
             resetCursorArray();
-            Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
+//            Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
             if (mPlaybackListener != null) {
                 mPlaybackListener.onProgress(-1);
             }
@@ -669,7 +669,7 @@ public class MWEngineManager {
                     count = count % maxMetroCount;
                     // update samplePlayCount up to maxMetroCount-1
                     samplePlayCount = Math.min(++samplePlayCount, maxMetroCount-1);
-                    Log.d(LOG_TAG, "metro::cycle() samplePlayCount: " + samplePlayCount);
+//                    Log.d(LOG_TAG, "metro::cycle() samplePlayCount: " + samplePlayCount);
                     task = scheduler.schedule(this::cycle, delay, TimeUnit.MILLISECONDS);
                 } else {
                     if(task != null) task.cancel(true); // maybe overcautious...
@@ -686,7 +686,7 @@ public class MWEngineManager {
             // max overlap = maxSampleCount
             public void calcOverlap() {
                 float overlap = smillis / (float)delay;
-                Log.d(LOG_TAG, "sample millis: " + smillis + " cycle time: " + delay + " overlap: " + overlap);
+//                Log.d(LOG_TAG, "sample millis: " + smillis + " cycle time: " + delay + " overlap: " + overlap);
             }
 
         }
