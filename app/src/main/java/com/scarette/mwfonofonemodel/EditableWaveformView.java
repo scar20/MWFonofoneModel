@@ -41,6 +41,7 @@ public class EditableWaveformView extends WaveformView {
     private int mSelectionStart;
     private int mSelectionEnd;
     private int mSampleLength, mMarkerPosition;
+    private int[] mMarkersPositions = new int[32]; // hard coded value, need something more flexible
     private float mStartPos = 0;
     private float mEndPos = 1;
     private Rect mSelectionRect;
@@ -150,9 +151,13 @@ public class EditableWaveformView extends WaveformView {
         super.onDraw(canvas);
 
         // draw cursor
-        if (mMarkerPosition > -1 && mMarkerPosition < mSampleLength)
-            canvas.drawLine(xStep * mMarkerPosition, 0, xStep * mMarkerPosition, height, mMarkerPaint);
+//        if (mMarkerPosition > -1 && mMarkerPosition < mSampleLength)
+//            canvas.drawLine(xStep * mMarkerPosition, 0, xStep * mMarkerPosition, height, mMarkerPaint);
 //        Log.d(DEBUG_TAG, "marker: " + (xStep * mMarkerPosition) );
+        for ( int pos : mMarkersPositions) {
+            if (pos > -1 && pos < mSampleLength)
+                canvas.drawLine(xStep * pos, 0, xStep * pos, height, mMarkerPaint);
+        }
     }
 
     // Added for selection start - end
@@ -247,6 +252,12 @@ public class EditableWaveformView extends WaveformView {
     @Override
     public void setMarkerPosition(int markerPosition) {
         mMarkerPosition = markerPosition;
+        postInvalidate();
+    }
+
+    public void setMarkerPosition(int[] markerPosition) {
+        mMarkersPositions = markerPosition;
+//        Log.d(DEBUG_TAG, "marker: " + mMarkersPositions.toString() );
         postInvalidate();
     }
 

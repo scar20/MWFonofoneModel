@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -194,6 +196,7 @@ public class MWEngineManager {
         private boolean isSet = false;
 
         private int maxMetroCount = 32;
+        private int samplePlayCount = -1; // index for the cursorPos array, -1 = no sample playing
         private int smillis;
 
         private Metronome metronome;
@@ -202,6 +205,9 @@ public class MWEngineManager {
         private PlaybackListener mPlaybackListener;
         private SyncedRenderer renderer;
         private SyncedRenderer levelMonitor;
+//        private Vector<Integer> cursorPos = new Vector<>(maxMetroCount);
+        private int[] cursorPos = new int[maxMetroCount];
+
 
 
         // constructor
@@ -210,14 +216,24 @@ public class MWEngineManager {
 //            _metroEvents = new Vector<>();
 //            _oneShotEvents = new Vector<>(); // for testing
 
+            // initialize cursorPos array
+            for (int i : cursorPos) cursorPos[i] = -1;
+
             // put an hash id of this track to receive notification when sample stop
             tracksMap.put(this.hashCode(), this);
 
             // renderer for display playback updates - maybe replaced by call in waveformView onDraw()
             // play() & stop() start/stop the renderer
             renderer = new SyncedRenderer(aLong -> {
-                int readPos = _sampleEvent.getReadPointer();
-                mPlaybackListener.onProgress(readPos);
+//                int readPos = _sampleEvent.getReadPointer();
+
+                if (isPlaying) {
+                    for (int i = 0; i <= samplePlayCount; i++) {
+                        cursorPos[i] = _sampleEvents.get(i).getReadPointer();
+                    }
+                    mPlaybackListener.onProgress(cursorPos);
+                }
+                else mPlaybackListener.onProgress(cursorPos); // will it be reset?
                 return null;
             });
 
@@ -390,11 +406,11 @@ public class MWEngineManager {
             curSampleName = tag;
 
             String filePath = FileUtil.filePaths.get(sampleSelection);
-            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
             if (SampleManager.hasSample(tag))
                 SampleManager.removeSample(tag, true);
             JavaUtilities.createSampleFromFile(tag, filePath);
-            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " haveSample: " + SampleManager.hasSample(tag));
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " haveSample: " + SampleManager.hasSample(tag));
 
             // this *MUST* be placed before setBufferRangeStart/End otherwise segfault at end of loop
             // - strangely, it do not happen if sample is backward. Need more investigation since
@@ -419,7 +435,7 @@ public class MWEngineManager {
             // reset the pointer to main sample and allow looping setting
             _sampleEvent = _sampleEvents.get(0);
             _sampleEvent.setLoopeable(isLooping, 0);
-            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + "  !!!!!! _sampleEvents size:" + _sampleEvents.size());
+//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + "  !!!!!! _sampleEvents size:" + _sampleEvents.size());
 
         }
 
@@ -427,7 +443,11 @@ public class MWEngineManager {
             isPlaying = true;
             if (isMetroOn) {
                 metronome.start(); // start from sampleEvents[0] thus include _sampleEvent
-            } else _sampleEvent.play();
+            } else {
+                _sampleEvent.play();
+                samplePlayCount++; // increment count, sample[0] playing
+                Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
+            }
             if (mPlaybackListener != null) {
                 renderer.start();
             }
@@ -440,6 +460,16 @@ public class MWEngineManager {
             }
             _sampleEvent.stop(); // must be stopped separately
             renderer.stop();
+            resetCursorArray();
+            Log.d(LOG_TAG, "play() samplePlayCount: " + samplePlayCount);
+            if (mPlaybackListener != null) {
+                mPlaybackListener.onProgress(-1);
+            }
+        }
+
+        private void resetCursorArray() {
+            for (int i = 0; i < cursorPos.length; i++) cursorPos[i] = -1;
+            samplePlayCount = -1;
         }
 
         public void oneShotTrigger() {
@@ -525,9 +555,13 @@ public class MWEngineManager {
             if (isMetroOn) {
                 if (isPlaying) {
                     metronome.startAfter(); // only start if playing
+                    // prevent looping while metro is on
+                    _sampleEvent.setLoopeable(false, 0);
                 }
             } else {
                 metronome.stop();
+                // revert looping to its current state
+                _sampleEvent.setLoopeable(isLooping, 0);
             }
         }
 
@@ -633,6 +667,9 @@ public class MWEngineManager {
                     _sampleEvents.get(count).play(); // pointers are reset on play
                     count++;
                     count = count % maxMetroCount;
+                    // update samplePlayCount up to maxMetroCount-1
+                    samplePlayCount = Math.min(++samplePlayCount, maxMetroCount-1);
+                    Log.d(LOG_TAG, "metro::cycle() samplePlayCount: " + samplePlayCount);
                     task = scheduler.schedule(this::cycle, delay, TimeUnit.MILLISECONDS);
                 } else {
                     if(task != null) task.cancel(true); // maybe overcautious...
@@ -740,7 +777,7 @@ public class MWEngineManager {
 //                    Log.d(LOG_TAG, "!!!!!! Marker Reached " + aNotificationValue);
                     if (aNotificationValue != 0) {
                         Track track = MWEngineManager.tracksMap.get(aNotificationValue);
-                        if (track != null) track.mPlaybackListener.onCompletion();
+                        if (track != null ) track.mPlaybackListener.onCompletion();
                     }
                     break;
             }

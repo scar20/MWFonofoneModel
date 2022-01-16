@@ -115,9 +115,17 @@ public class TrackFragment extends Fragment {
             }
 
             @Override
+            public void onProgress(int[] cursorPos) {
+                mReadPValue.setText(String.valueOf(cursorPos[0]));
+                mWaveformView.setMarkerPosition(cursorPos);
+            }
+
+            @Override
             public void onCompletion() {
 //                Log.d(LOG_TAG, "//////// Completed ////////");
-                Objects.requireNonNull(getActivity()).runOnUiThread(() -> trackModel.setIsPlaying(false));
+                if (!isLooping) // ignore the signal when looping :
+                    // running metro cause main loop to temporary set looping off
+                    Objects.requireNonNull(getActivity()).runOnUiThread(() -> trackModel.setIsPlaying(false));
                 // will call engine track stop
             }
         });
@@ -180,6 +188,7 @@ public class TrackFragment extends Fragment {
             playButton.setActivated(aBoolean);
             piqueButton.setActivated(aBoolean);
             // others play button on the ui
+            if (!isPlaying) mWaveformView.setMarkerPosition(-1);
         });
 
         Button directionButton = view.findViewById( R.id.direction_button );
@@ -273,7 +282,7 @@ public class TrackFragment extends Fragment {
 
     private class SoundChangeHandler implements AdapterView.OnItemSelectedListener {
         public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-            Log.d(LOG_TAG, "//////// SoundChangeHandler pos: " + pos);
+//            Log.d(LOG_TAG, "//////// SoundChangeHandler pos: " + pos);
             String selectedValue = parent.getItemAtPosition(pos).toString();
             String name = "";
             if (selectedValue.toLowerCase().equals("bach")) {
