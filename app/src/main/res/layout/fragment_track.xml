@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:visibility="visible">
 
 
     <!-- sample selection -->
@@ -51,7 +53,7 @@
 
         app:waveformRecordColor="@color/default_record_waveform" />
 
-    <!-- cursor label -->
+    <!--    &lt;!&ndash; cursor label &ndash;&gt;
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -78,38 +80,46 @@
             android:textColor="@color/white"
             android:textStyle="bold" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
 
     <!-- play controls -->
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:layout_gravity="start"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/PlayPauseButton"
-            android:layout_width="48dp"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="64dp"
             android:layout_height="match_parent"
+            android:layout_marginEnd="2dp"
             android:foreground="@drawable/ic_session_tab_play_statelist_24px"
-            android:foregroundGravity="clip_horizontal|center"
+            android:foregroundGravity="center"
             android:soundEffectsEnabled="false" />
 
         <Button
             android:id="@+id/piqueButton"
-            android:layout_width="48dp"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="64dp"
             android:layout_height="match_parent"
+            android:layout_marginEnd="2dp"
             android:foreground="@drawable/pique_statelist_24"
-            android:foregroundGravity="clip_horizontal|center"
+            android:foregroundGravity="center"
             android:soundEffectsEnabled="false" />
 
         <Button
             android:id="@+id/direction_button"
-            android:layout_width="72dp"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="64dp"
             android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:soundEffectsEnabled="false"
             android:text="@string/sample_forward"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
@@ -117,8 +127,11 @@
 
         <Button
             android:id="@+id/loop_button"
-            android:layout_width="wrap_content"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="64dp"
             android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:soundEffectsEnabled="false"
             android:text="@string/loop_btn"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
@@ -131,7 +144,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -139,6 +152,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="0" />
@@ -156,7 +170,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -164,6 +178,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="100" />
@@ -181,7 +196,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -189,6 +204,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="50" />
@@ -206,7 +222,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -214,6 +230,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="50" />
@@ -232,7 +249,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -240,6 +257,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="0" />
@@ -272,14 +290,14 @@
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/reverb_switch"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="48dp"
                 android:soundEffectsEnabled="false" />
 
             <TextView
@@ -297,7 +315,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -312,14 +330,14 @@
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/metronome_switch"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="48dp"
                 android:soundEffectsEnabled="false" />
 
             <TextView
@@ -337,7 +355,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal">
 
         <SeekBar
@@ -345,6 +364,7 @@
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="0.5"
             android:padding="4dp"
             android:progress="70" />
@@ -358,7 +378,13 @@
             android:text="@string/slider_volume" />
     </LinearLayout>
 
-    <Button
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider" />
+
+    <!--    <Button
         android:id="@+id/oneshot_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -368,6 +394,6 @@
         android:id="@+id/oneshot_button2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="OneShot Stop All" />
+        android:text="OneShot Stop All" />-->
 
 </LinearLayout>

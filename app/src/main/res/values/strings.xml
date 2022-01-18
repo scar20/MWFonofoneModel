@@ -6,8 +6,8 @@
     <string name="sample_selection">Sample selection</string>
     <string name="play_btn">Play</string>
     <string name="pause_btn">Stop</string>
-    <string name="sample_forward"><![CDATA[--->]]></string>
-    <string name="sample_backward"><![CDATA[<---]]></string>
+    <string name="sample_forward"><![CDATA[-->]]></string>
+    <string name="sample_backward"><![CDATA[<--]]></string>
     <string name="loop_btn">Loop</string>
 
     <string name="sample_start">Sample start</string>
@@ -27,8 +27,11 @@
     <string-array name="samples">
         <item>Bach</item>
         <item>Bonjour</item>
+        <item>Cristal</item>
+        <item>Ping-pong</item>
+        <item>Scintillement</item>
+        <item>Tktkt_asc</item>
         <item>Sin 1000Hz 0dB</item>
-        <item>Sin 1000Hz -3dB</item>
     </string-array>
 
 </resources>

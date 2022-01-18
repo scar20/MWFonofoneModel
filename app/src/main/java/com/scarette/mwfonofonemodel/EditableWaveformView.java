@@ -45,9 +45,9 @@ public class EditableWaveformView extends WaveformView {
     private float mStartPos = 0;
     private float mEndPos = 1;
     private Rect mSelectionRect;
-    private int mSelectionColor, mMarkerColor;
+    private int mSelectionColor, mMarkerColor, mMainMarkerColor;
     private int mBackgroundColor;
-    private Paint mSelectionPaint, mMarkerPaint;
+    private Paint mSelectionPaint, mMarkerPaint, mMainMarkerPaint;
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
     //    private WaveformListener mListener;
@@ -91,6 +91,8 @@ public class EditableWaveformView extends WaveformView {
                 ContextCompat.getColor(context, R.color.default_selection));
         mMarkerColor = a.getColor(R.styleable.EditableWaveformView_playbackIndicatorColor,
                 ContextCompat.getColor(context, R.color.default_playback_indicator));
+        mMainMarkerColor = a.getColor(R.styleable.EditableWaveformView_mainPlaybackIndicatorColor,
+                ContextCompat.getColor(context, R.color.default_record_waveform));
 
         mRecordStrokePaint = new Paint();
         mRecordStrokePaint.setColor(mRecordColor);
@@ -108,6 +110,13 @@ public class EditableWaveformView extends WaveformView {
         mMarkerPaint.setStrokeWidth(0);
         mMarkerPaint.setAntiAlias(true);
         mMarkerPaint.setColor(mMarkerColor);
+
+        mMainMarkerPaint = new Paint();
+        mMainMarkerPaint.setStyle(Paint.Style.STROKE);
+        mMainMarkerPaint.setStrokeWidth(2.f);
+        mMainMarkerPaint.setAntiAlias(true);
+        mMainMarkerPaint.setColor(mMainMarkerColor);
+
         if (mMode == MODE_RECORDING) {
 
         }
@@ -151,12 +160,13 @@ public class EditableWaveformView extends WaveformView {
         super.onDraw(canvas);
 
         // draw cursor
-//        if (mMarkerPosition > -1 && mMarkerPosition < mSampleLength)
-//            canvas.drawLine(xStep * mMarkerPosition, 0, xStep * mMarkerPosition, height, mMarkerPaint);
 //        Log.d(DEBUG_TAG, "marker: " + (xStep * mMarkerPosition) );
-        for ( int pos : mMarkersPositions) {
+        for ( int i = 0; i < mMarkersPositions.length; i++) {
+            int pos = mMarkersPositions[i];
             if (pos > -1 && pos < mSampleLength)
-                canvas.drawLine(xStep * pos, 0, xStep * pos, height, mMarkerPaint);
+                canvas.drawLine(xStep * pos, 0, xStep * pos, height,
+                        i == 0 ? mMainMarkerPaint : mMarkerPaint);
+
         }
     }
 

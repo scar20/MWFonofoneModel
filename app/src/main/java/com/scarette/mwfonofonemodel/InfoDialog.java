@@ -79,6 +79,9 @@ public class InfoDialog extends DialogFragment {
 
         AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
 
+        boolean _supportsAAudio     = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
+        String str0 = "AAudio support: " + _supportsAAudio + "\n\n";
+
         String rate = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
         int SAMPLE_RATE = Integer.parseInt(rate);
         String str1 = "PROPERTY_OUTPUT_SAMPLE_RATE: " + rate + "\n\n";
@@ -86,13 +89,13 @@ public class InfoDialog extends DialogFragment {
         String size = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
         String str2 = "PROPERTY_OUTPUT_FRAMES_PER_BUFFER: " + size + "\n\n";
 
-        int playMinBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT);
-        String str3 = "AudioTrack minBufferSize mono PCM16bit: " + playMinBufferSize + "\n\n";
-
-        int playMinBufferSizeFloat = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_FLOAT);
-        String str4 = "AudioTrack minBufferSize mono PCMFloat: " + playMinBufferSizeFloat + "\n\n";
+//        int playMinBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
+//                AudioFormat.ENCODING_PCM_16BIT);
+//        String str3 = "AudioTrack minBufferSize mono PCM16bit: " + playMinBufferSize + "\n\n";
+//
+//        int playMinBufferSizeFloat = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO,
+//                AudioFormat.ENCODING_PCM_FLOAT);
+//        String str4 = "AudioTrack minBufferSize mono PCMFloat: " + playMinBufferSizeFloat + "\n\n";
 
         int MWEngineRecSampleRate = MWEngine.getRecommendedSampleRate(getContext());
         String str5 = "MWEngineRecommendedSampleRate: " + MWEngineRecSampleRate + "\n\n";
@@ -113,7 +116,7 @@ public class InfoDialog extends DialogFragment {
         boolean hasProFeature = packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO);
         String str9 = "FEATURE_AUDIO_PRO: " + hasProFeature + "\n\n";
 
-        return str1 + str2 + str3 + str4 + str5 + str6 + str7 + str8 + str9;
+        return str0 + str1 + str2 + str5 + str6 + str7 + str8 + str9;
     }
 }
 

@@ -34,7 +34,7 @@ public class FileUtil {
 
         File file = new File(destRoot);
         if (!file.exists()) {
-//            Log.d(LOG_TAG,"File not exist - installing files on user directory");
+            Log.d(LOG_TAG,"!!!!!!! File do not exist - installing files on user directory");
 
             try {
                 String[] list = manager.list(assetsSource);

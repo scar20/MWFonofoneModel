@@ -13,7 +13,7 @@ public class TracksViewModel extends ViewModel {
 
     public TracksViewModel() {
         super();
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<3; i++) {
             tracks.add(new TrackModel(i));
         }
     }
@@ -36,7 +36,6 @@ public class TracksViewModel extends ViewModel {
         }
 
         public void setInitialValue() {
-//            setSampleName("001");
             setSampleSelection(1);
             setSampleStart(0.0f);
             setSampleEnd(1.0f);
@@ -65,20 +64,13 @@ public class TracksViewModel extends ViewModel {
         }
 
         // for androfone/fonofone
-        private final MutableLiveData<Integer> sampleSelection = new MutableLiveData<>(0);
+        private final MutableLiveData<Integer> sampleSelection = new MutableLiveData<>(1);
         public LiveData<Integer> getSampleSelection() { return sampleSelection; }
         public void setSampleSelection(int sampleSelection) {
             this.sampleSelection.setValue(sampleSelection);
             audioTrack.setSample(String.valueOf(id), sampleSelection);
             resetValues();
         }
-
-//        private final MutableLiveData<String> sampleName = new MutableLiveData<>("001");
-//        public LiveData<String> getSampleName() { return sampleName; }
-//        public void setSampleName(String sampleName) {
-//            this.sampleName.setValue(sampleName);
-//            audioTrack.setSample(sampleName);
-//        }
 
 
         private final MutableLiveData<Boolean> isPlaying = new MutableLiveData<>(false);
@@ -87,10 +79,6 @@ public class TracksViewModel extends ViewModel {
             this.isPlaying.setValue(isPlaying);
             if (isPlaying) audioTrack.play();
             else audioTrack.stop();
-        }
-        public void stopPlaying() {
-            this.isPlaying.setValue(false);
-            audioTrack.stop();
         }
 
         private final MutableLiveData<Boolean> isForward = new MutableLiveData<>(true);
@@ -156,7 +144,7 @@ public class TracksViewModel extends ViewModel {
             audioTrack.setReverbOn(isReverbOn);
         }
 
-        private final MutableLiveData<Float> metroRate = new MutableLiveData<>(0.1f);
+        private final MutableLiveData<Float> metroRate = new MutableLiveData<>(0.2f);
         public MutableLiveData<Float> getMetroRate() { return metroRate; }
         public void setMetroRate(float metroRate) {
             this.metroRate.setValue(metroRate);

@@ -159,9 +159,11 @@ public class MainActivity extends AppCompatActivity {
         mFragmentManager = getSupportFragmentManager();
         TrackFragment track1 = TrackFragment.newInstance(0);
         TrackFragment track2 = TrackFragment.newInstance(1);
+        TrackFragment track3 = TrackFragment.newInstance(2);
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.add(R.id.track1_container, track1, null);
         transaction.add(R.id.track2_container, track2, null);
+        transaction.add(R.id.track3_container, track3, null);
         transaction.commitNow();
 
         // set mixer view
@@ -207,21 +209,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         SeekBar mixerVol3 = findViewById(R.id.MixerVolumeSlider3);
-        mixerVol3.setAlpha(0.3f);
-//        viewModel.getTrack(2).getVolume().observe(this, aFloat ->
-//                mixerVol2.setProgress((int)(aFloat * 100)));
-//        mixerVol3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-//                viewModel.getTrack(2).setVolume(seekBar.getProgress() / 100f);
-//            }
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//            }
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//            }
-//        });
+        viewModel.getTrack(2).getVolume().observe(this, aFloat ->
+                mixerVol3.setProgress((int)(aFloat * 100)));
+        mixerVol3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                viewModel.getTrack(2).setVolume(seekBar.getProgress() / 100f);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
 
         _inited = true;
     }

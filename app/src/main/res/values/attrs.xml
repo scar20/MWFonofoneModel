@@ -6,5 +6,6 @@
         <attr name="backgroundColor" format="color" />
         <attr name="selectionColor" format="color"/>
         <attr name="playbackIndicatorColor" format="color" />
+        <attr name="mainPlaybackIndicatorColor" format="color" />
     </declare-styleable>
 </resources>

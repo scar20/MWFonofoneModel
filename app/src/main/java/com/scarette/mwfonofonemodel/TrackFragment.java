@@ -35,6 +35,9 @@ public class TrackFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
+    // hack to remap the file to their proper values
+    private static int[] fileRemap = {0, 1, 2, 3, 4, 6, 5};
+
 
     private static final String LOG_TAG = "MWENGINE_FRAG"; // logcat identifier
 
@@ -48,8 +51,6 @@ public class TrackFragment extends Fragment {
     private boolean isReverbOn;
     private boolean isMetroOn;
 
-    private TextView mReadPLabel;
-    private TextView mReadPValue;
     private EditableWaveformView mWaveformView;
 
     private TracksViewModel viewModel;
@@ -105,18 +106,16 @@ public class TrackFragment extends Fragment {
         mWaveformView.setChannels(1);
         mWaveformView.setShowTextAxis(false);
 
-        mReadPLabel = view.findViewById(R.id.readP_label);
-        mReadPValue = view.findViewById(R.id.readP_value);
         mAudioEngine.getTrack(whichTrack).setPlaybackListener(new PlaybackListener() {
             @Override
             public void onProgress(int readP) {
-                mReadPValue.setText(String.valueOf(readP));
-                mWaveformView.setMarkerPosition(readP);
+//                mReadPValue.setText(String.valueOf(readP));
+//                mWaveformView.setMarkerPosition(readP);
             }
 
             @Override
             public void onProgress(int[] cursorPos) {
-                mReadPValue.setText(String.valueOf(cursorPos[0]));
+//                mReadPValue.setText(String.valueOf(cursorPos[0]));
                 mWaveformView.setMarkerPosition(cursorPos);
             }
 
@@ -124,7 +123,7 @@ public class TrackFragment extends Fragment {
             public void onCompletion() {
 //                Log.d(LOG_TAG, "//////// Completed ////////");
                 if (!isLooping) // ignore the signal when looping :
-                    // running metro cause main loop to temporary set looping off
+                    // running metro need main loop to temporary set looping off while still playing
                     Objects.requireNonNull(getActivity()).runOnUiThread(() -> trackModel.setIsPlaying(false));
                 // will call engine track stop
             }
@@ -138,9 +137,8 @@ public class TrackFragment extends Fragment {
         trackModel.getSampleSelection().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                short[] buf = FileUtil.shortBuffers.get(integer);
+                short[] buf = FileUtil.shortBuffers.get(fileRemap[integer]);
                 mWaveformView.setSamples(buf);
-//                mAudioEngine.getTrack(whichTrack).setSample(String.valueOf(whichTrack), integer);
                 spinner.setSelection(integer);
             }
         });
@@ -177,6 +175,7 @@ public class TrackFragment extends Fragment {
             }
             else if (action == MotionEvent.ACTION_UP) {
                 trackModel.setIsPlaying(false);
+                piqueButton.setActivated(false);
                 return true;
             }
             return false;
@@ -265,17 +264,10 @@ public class TrackFragment extends Fragment {
         trackModel.getVolume().observe(this, aFloat ->
                 vol.setProgress((int) (aFloat * 100)));
 
-        view.findViewById(R.id.oneshot_button).setOnClickListener(v ->
-                mAudioEngine.getTrack(whichTrack).oneShotTrigger());
-
-        view.findViewById(R.id.oneshot_button2).setOnClickListener(v -> {
-            mAudioEngine.getTrack(whichTrack).oneShotStop();
-//            Log.d(LOG_TAG, "//////// STOP ONE SHOT ////////");
-        });
-
-        trackModel.setInitialValue();
 
     }
+
+
 
 
     /* event handlers */
@@ -286,16 +278,24 @@ public class TrackFragment extends Fragment {
             String selectedValue = parent.getItemAtPosition(pos).toString();
             String name = "";
             if (selectedValue.toLowerCase().equals("bach")) {
-                name = "001";
-            } else if (selectedValue.toLowerCase().equals("bonjour")) {
                 name = "000";
+            } else if (selectedValue.toLowerCase().equals("bonjour")) {
+                name = "001";
+            } else if (selectedValue.toLowerCase().equals("cristal")) {
+                name = "002";
+            } else if (selectedValue.toLowerCase().equals("ping-pong")) {
+                name = "003";
+            } else if (selectedValue.toLowerCase().equals("scintillement")) {
+                name = "004";
+            } else if (selectedValue.toLowerCase().equals("tktkt_asc")) {
+                name = "005";
             }
             else if (selectedValue.toLowerCase().equals("sin 1000hz 0db")) {
-                name = "002";
+                name = "006";
             }
-            else if (selectedValue.toLowerCase().equals("sin 1000hz -3db")) {
-                name = "003";
-            }
+//            else if (selectedValue.toLowerCase().equals("sin 1000hz -3db")) {
+//                name = "003";
+//            }
             if ( name != "") {
                 trackModel.setSampleSelection(pos);
 //                trackModel.setSampleName(name);
