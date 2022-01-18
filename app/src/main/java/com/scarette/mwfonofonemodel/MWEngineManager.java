@@ -321,7 +321,6 @@ public class MWEngineManager {
 
 //            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleEvent to flush: " + _sampleEvents.size());
             for (final BaseAudioEvent event : _sampleEvents) {
-                event.getInstrument().delete();
                 event.delete();
             }
 
