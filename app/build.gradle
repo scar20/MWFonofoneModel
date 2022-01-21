@@ -14,7 +14,7 @@ android {
         applicationId "com.scarette.mwfonofonemodel"
         minSdk 21
         targetSdk 31
-        versionCode 7
+        versionCode 8
         versionName '1.0'
         ndkVersion '23.1.7779620'
 

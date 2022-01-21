@@ -73,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
+        // install asset early to avoid null pointer on some devices
+        FileUtil.installAssets(getApplication());
+
         setContentView( R.layout.activity_main );
 
         // these may not necessarily all be required for your use case (e.g. if you're not recording
@@ -149,8 +152,6 @@ public class MainActivity extends AppCompatActivity {
         // init engine - will only reset activity pointer if engine is already initialized
         mAudioEngine.initAudioEngine(this);
         tracks = mAudioEngine.getTracks();
-
-        FileUtil.installAssets(getApplication());
 
         // set up view model
         viewModel = new ViewModelProvider(this).get(TracksViewModel.class);

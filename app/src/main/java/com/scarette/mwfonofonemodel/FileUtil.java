@@ -34,8 +34,7 @@ public class FileUtil {
 
         File file = new File(destRoot);
         if (!file.exists()) {
-            Log.d(LOG_TAG,"!!!!!!! File do not exist - installing files on user directory");
-
+//            Log.d(LOG_TAG,"!!!!!!! File do not exist - installing files on user directory");
             try {
                 String[] list = manager.list(assetsSource);
                 createDirectory(destRoot);
@@ -87,9 +86,6 @@ public class FileUtil {
         int count = 0;
         shortBuffers.clear();
         for (String name : list) {
-//            Log.d(LOG_TAG, "file in userDir: " + name);
-//            String key = "00" + count++;
-//            JavaUtilities.createSampleFromFile(key, sourcePath + File.separator + name);
             String filePath = sourcePath + File.separator + name;
             filePaths.add(filePath);
             File f = new File(sourcePath + File.separator + name);
