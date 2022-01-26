@@ -218,15 +218,14 @@ public class MWEngineManager {
             // renderer for display playback updates - maybe replaced by call in waveformView onDraw()
             // play() & stop() start/stop the renderer
             renderer = new SyncedRenderer(aLong -> {
-//                int readPos = _sampleEvent.getReadPointer();
-
                 if (isPlaying) {
                     for (int i = 0; i <= samplePlayCount; i++) {
                         cursorPos[i] = _sampleEvents.get(i).getReadPointer();
                     }
                     mPlaybackListener.onProgress(cursorPos);
                 }
-                else mPlaybackListener.onProgress(cursorPos); // will it be reset?
+                // we need to call this one last time on stop because we are one frame late
+                else mPlaybackListener.onProgress(cursorPos); // will it be reset? - YES
                 return null;
             });
 
