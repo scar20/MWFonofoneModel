@@ -124,7 +124,7 @@ public class TrackFragment extends Fragment {
 //                Log.d(LOG_TAG, "//////// Completed ////////");
                 if (!isLooping) // ignore the signal when looping :
                     // running metro need main loop to temporary set looping off while still playing
-                    Objects.requireNonNull(getActivity()).runOnUiThread(() -> trackModel.setIsPlaying(false));
+                    requireActivity().runOnUiThread(() -> trackModel.setIsPlaying(false));
                 // will call engine track stop
             }
         });
@@ -134,7 +134,7 @@ public class TrackFragment extends Fragment {
 
         // set spinner and waveformview display
 
-        trackModel.getSampleSelection().observe(this, new Observer<Integer>() {
+        trackModel.getSampleSelection().observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
                 short[] buf = FileUtil.shortBuffers.get(fileRemap[integer]);
@@ -153,8 +153,8 @@ public class TrackFragment extends Fragment {
                 trackModel.setSampleEnd(end);
             }
         });
-        trackModel.getSampleStart().observe(this, mWaveformView::setSelectionStart);
-        trackModel.getSampleEnd().observe(this, mWaveformView::setSelectionEnd);
+        trackModel.getSampleStart().observe(getViewLifecycleOwner(), mWaveformView::setSelectionStart);
+        trackModel.getSampleEnd().observe(getViewLifecycleOwner(), mWaveformView::setSelectionEnd);
 
 
         Button playButton = view.findViewById(R.id.PlayPauseButton);
@@ -182,7 +182,7 @@ public class TrackFragment extends Fragment {
         });
 
         // observe current playing state and reset UI Play & Pique on change
-        trackModel.getIsPlaying().observe(this, aBoolean -> {
+        trackModel.getIsPlaying().observe(getViewLifecycleOwner(), aBoolean -> {
             isPlaying = aBoolean;
             playButton.setActivated(aBoolean);
             piqueButton.setActivated(aBoolean);
@@ -198,7 +198,7 @@ public class TrackFragment extends Fragment {
             }
             return false;
         });
-        trackModel.getIsForward().observe(this, aBoolean -> {
+        trackModel.getIsForward().observe(getViewLifecycleOwner(), aBoolean -> {
             isForward = aBoolean;
             directionButton.setText( isForward ? R.string.sample_forward : R.string.sample_backward);
         });
@@ -211,57 +211,57 @@ public class TrackFragment extends Fragment {
             }
             return false;
         });
-        trackModel.getIsLooping().observe(this, aBoolean -> {
+        trackModel.getIsLooping().observe(getViewLifecycleOwner(), aBoolean -> {
             isLooping = aBoolean;
             loopButton.setActivated(isLooping);
         });
 
         SeekBar start = view.findViewById( R.id.sample_start );
         start.setOnSeekBarChangeListener( new SampleStartChangeHandler());
-        trackModel.getSampleStart().observe(this, aFloat ->
+        trackModel.getSampleStart().observe(getViewLifecycleOwner(), aFloat ->
                 start.setProgress((int) (aFloat * 100)));
 
         SeekBar end = view.findViewById( R.id.sample_end );
         end.setOnSeekBarChangeListener( new SampleEndChangeHandler());
-        trackModel.getSampleEnd().observe(this, aFloat ->
+        trackModel.getSampleEnd().observe(getViewLifecycleOwner(), aFloat ->
                 end.setProgress((int) (aFloat * 100)));
 
         SeekBar speed = view.findViewById( R.id.speed );
         speed.setOnSeekBarChangeListener( new SampleSpeedChangeHandler());
-        trackModel.getSampleSpeed().observe(this, aFloat ->
+        trackModel.getSampleSpeed().observe(getViewLifecycleOwner(), aFloat ->
                 speed.setProgress((int) (aFloat * 100)));
 
         SeekBar cutoff = view.findViewById( R.id.FilterCutoffSlider );
         cutoff.setOnSeekBarChangeListener( new FilterCutoffChangeHandler());
-        trackModel.getFilterCutoff().observe(this, aFloat ->
+        trackModel.getFilterCutoff().observe(getViewLifecycleOwner(), aFloat ->
                 cutoff.setProgress((int) (aFloat * 100)));
 
         SeekBar res = view.findViewById( R.id.FilterQ );
         res.setOnSeekBarChangeListener( new FilterQChangeHandler());
-        trackModel.getFilterResonance().observe(this, aFloat ->
+        trackModel.getFilterResonance().observe(getViewLifecycleOwner(), aFloat ->
                 res.setProgress((int) (aFloat * 100)));
 
         SeekBar reverb = view.findViewById( R.id.reverb );
         reverb.setOnSeekBarChangeListener( new ReverbChangeHandler());
-        trackModel.getReverb().observe(this, aFloat ->
+        trackModel.getReverb().observe(getViewLifecycleOwner(), aFloat ->
                 reverb.setProgress((int) (aFloat * 100)));
 
         SwitchCompat revSwitch = view.findViewById( R.id.reverb_switch );
         revSwitch.setOnClickListener(v -> trackModel.setIsReverbOn(((SwitchCompat) v).isChecked()));
-        trackModel.getIsReverbOn().observe(this, revSwitch::setChecked);
+        trackModel.getIsReverbOn().observe(getViewLifecycleOwner(), revSwitch::setChecked);
 
         SeekBar metro = view.findViewById( R.id.metronome );
         metro.setOnSeekBarChangeListener( new MetronomeChangeHandler());
-        trackModel.getMetroRate().observe(this, aFloat ->
+        trackModel.getMetroRate().observe(getViewLifecycleOwner(), aFloat ->
                 metro.setProgress((int) (aFloat * 100)));
 
         SwitchCompat metroSwitch = view.findViewById( R.id.metronome_switch );
         metroSwitch.setOnClickListener(v -> trackModel.setIsMetroOn(((SwitchCompat)v).isChecked()));
-        trackModel.getIsMetroOn().observe(this, metroSwitch::setChecked);
+        trackModel.getIsMetroOn().observe(getViewLifecycleOwner(), metroSwitch::setChecked);
 
         SeekBar vol = view.findViewById( R.id.VolumeSlider );
         vol.setOnSeekBarChangeListener( new VolumeChangeHandler() );
-        trackModel.getVolume().observe(this, aFloat ->
+        trackModel.getVolume().observe(getViewLifecycleOwner(), aFloat ->
                 vol.setProgress((int) (aFloat * 100)));
 
 
