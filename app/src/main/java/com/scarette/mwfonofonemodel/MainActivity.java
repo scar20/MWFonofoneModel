@@ -11,19 +11,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -64,6 +62,65 @@ public class MainActivity extends AppCompatActivity {
     private static String LOG_TAG = "MWENGINE"; // logcat identifier
     private static int PERMISSIONS_CODE = 8081981;
 
+    private static final String DEBUG_TAG = "MWFon-MainActivity";
+    private static View mainView;
+    private static AppCompatActivity activity;
+
+    public static final InstallCallbackInterface installCallbackInterface = new InstallCallbackInterface() {
+        private PopupWindow popupWindow;
+        private TextView itemUpdateView;
+        @Override
+        public void onInstall() {
+            // inflate the layout of the popup window
+            Log.d( DEBUG_TAG, "CallbackInterface onInstall() ");
+
+            LayoutInflater inflater = (LayoutInflater)
+                    activity.getSystemService(LAYOUT_INFLATER_SERVICE);
+            View popupView = inflater.inflate(R.layout.popup_window, null);
+
+            // create the popup window
+            int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+            int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            boolean focusable = false; //
+            popupWindow = new PopupWindow(popupView, width, height, focusable);
+            popupWindow.setFocusable(false);
+            popupWindow.setTouchable(false);
+            popupWindow.setOutsideTouchable(false);
+            itemUpdateView = popupView.findViewById(R.id.num_item_installed_view);
+
+            // show the popup window
+            // which view you pass in doesn't matter, it is only used for the window tolken
+            mainView.post(new Runnable() {
+                @Override
+                public void run() {
+                    popupWindow.showAtLocation(mainView, Gravity.CENTER, 0, 0);
+                }
+            });
+        }
+
+        @Override
+        public void onItemUpdate(String numOfNum) {
+            mainView.post(new Runnable() {
+                @Override
+                public void run() {
+                    itemUpdateView.setText(numOfNum);
+                }
+            });
+        }
+
+        @Override
+        public void onInstallFinished() {
+            Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() called" );
+            mainView.post(new Runnable() {
+                @Override
+                public void run() {
+                    popupWindow.dismiss();
+                }
+            });
+            Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() finished" );
+        }
+    };
+
     /* public methods */
 
     /**
@@ -73,8 +130,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        // install asset early to avoid null pointer on some devices
-        FileUtil.installAssets(getApplication());
+        activity = this; // needed for the popup message in the InstallCallback
+
+        // Create Repository if not created - that will install the assetes if first time
+        Repository repository = Repository.getInstance();
+        repository.init(getApplication());
 
         setContentView( R.layout.activity_main );
 
@@ -98,6 +158,14 @@ public class MainActivity extends AppCompatActivity {
 
         // We do not record hence we do not need permission
 //        init();  // perhaps we need....
+    }
+
+    @Override
+    public void setContentView(int layoutResID) {
+        Log.d( DEBUG_TAG, "setContentView() called" );
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        mainView = inflater.inflate(R.layout.activity_main, null);
+        super.setContentView(mainView);
     }
 
     @TargetApi( Build.VERSION_CODES.M )

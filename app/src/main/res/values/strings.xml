@@ -34,4 +34,8 @@
         <item>Sin 1000Hz 0dB</item>
     </string-array>
 
+    <string name="installing_sound_bank">Installing Sound Bank</string>
+    <string name="complementary_install_promt">It may takes a few minutes</string>
+    <string name="item_installed">0/0</string>
+
 </resources>

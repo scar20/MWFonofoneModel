@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,12 +18,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.TextView;
-
-import java.util.Objects;
-
-import nl.igorski.mwengine.core.JavaUtilities;
-import nl.igorski.mwengine.core.SampleManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -137,7 +130,8 @@ public class TrackFragment extends Fragment {
         trackModel.getSampleSelection().observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                short[] buf = FileUtil.shortBuffers.get(fileRemap[integer]);
+//                short[] buf = FileUtil.shortBuffers.get(fileRemap[integer]);
+                short[] buf = Repository.FileUtil.shortBuffers.get(fileRemap[integer]);
                 mWaveformView.setSamples(buf);
                 spinner.setSelection(integer);
             }

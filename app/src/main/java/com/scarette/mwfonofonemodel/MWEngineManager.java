@@ -388,7 +388,7 @@ public class MWEngineManager {
 
             curSampleName = tag;
 
-            String filePath = FileUtil.filePaths.get(fileRemap[sampleSelection]);
+            String filePath = Repository.FileUtil.filePaths.get(fileRemap[sampleSelection]);
 //            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
             if (SampleManager.hasSample(tag))
                 SampleManager.removeSample(tag, true);
