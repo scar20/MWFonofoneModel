@@ -66,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     private static View mainView;
     private static AppCompatActivity activity;
 
+    static {
+        System.loadLibrary("fileio");
+    }
+
     public static final InstallCallbackInterface installCallbackInterface = new InstallCallbackInterface() {
         private PopupWindow popupWindow;
         private TextView itemUpdateView;
