@@ -146,6 +146,7 @@ public class Repository {
             MainActivity.installCallbackInterface.onInstallFinished();
             Log.d(DEBUG_TAG,"!!! populate files finished");
             executor.shutdown();
+            FileUtil.setUpSample();
         });
 
 
@@ -252,9 +253,9 @@ public class Repository {
         public static Vector<String> filePaths = new Vector<>();
 
 
-        public static void setUpSample(Application application) {
-            String rootDir = "samples";
-            String sourcePath = application.getFilesDir().getPath() + File.separator + rootDir;
+        public static void setUpSample() {
+            String rootDir = "sound bank";
+            String sourcePath = filesDirectory.getAbsolutePath() + File.separator + rootDir;
             File dir = new File(sourcePath);
             String[] list = dir.list();
             int count = 0;
@@ -263,7 +264,6 @@ public class Repository {
             for (String name : list) {
                 String filePath = sourcePath + File.separator + name;
                 filePaths.add(filePath);
-                File f = new File(sourcePath + File.separator + name);
                 short[] buf;
                 buf = getAudioSample(filePath);
                 shortBuffers.add(buf);
