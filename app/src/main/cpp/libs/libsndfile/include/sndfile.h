@@ -374,7 +374,7 @@ typedef int64_t	sf_count_t ;
 */
 
 struct SF_INFO
-{	sf_count_t	frames ;		/* Used to be called samples.  Changed to avoid confusion. */
+{	sf_count_t	frames ;		/* Used to be called sound bank.  Changed to avoid confusion. */
 	int			samplerate ;
 	int			channels ;
 	int			format ;
@@ -658,7 +658,7 @@ int		sf_format_check	(const SF_INFO *info) ;
 ** An offset of zero with whence set to SEEK_SET will position the
 ** read / write pointer to the first data sample.
 ** On success sf_seek returns the current position in (multi-channel)
-** samples from the start of the file.
+** sound bank from the start of the file.
 ** Please see the libsndfile documentation for moving the read pointer
 ** separately from the write pointer on files open in mode SFM_RDWR.
 ** On error all of these functions return -1.

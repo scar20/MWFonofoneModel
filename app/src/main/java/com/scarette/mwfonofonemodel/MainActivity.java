@@ -15,15 +15,11 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import java.util.Vector;
 
@@ -52,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean _inited           = false;
 
+    private boolean isInstallFilesFinished = false;
+
     private Vector<MWEngineManager.Track> tracks;
 
     // AAudio is only supported from Android 8/Oreo onwards.
@@ -63,67 +61,22 @@ public class MainActivity extends AppCompatActivity {
     private static int PERMISSIONS_CODE = 8081981;
 
     private static final String DEBUG_TAG = "MWFon-MainActivity";
-    private static View mainView;
-    private static AppCompatActivity activity;
+
 
     static {
         System.loadLibrary("fileio");
     }
 
-    public static final InstallCallbackInterface installCallbackInterface = new InstallCallbackInterface() {
-        private PopupWindow popupWindow;
-        private TextView itemUpdateView;
-        @Override
-        public void onInstall() {
-            // inflate the layout of the popup window
-            Log.d( DEBUG_TAG, "CallbackInterface onInstall() ");
 
-            LayoutInflater inflater = (LayoutInflater)
-                    activity.getSystemService(LAYOUT_INFLATER_SERVICE);
-            View popupView = inflater.inflate(R.layout.popup_window, null);
-
-            // create the popup window
-            int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-            int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            boolean focusable = false; //
-            popupWindow = new PopupWindow(popupView, width, height, focusable);
-            popupWindow.setFocusable(false);
-            popupWindow.setTouchable(false);
-            popupWindow.setOutsideTouchable(false);
-            itemUpdateView = popupView.findViewById(R.id.num_item_installed_view);
-
-            // show the popup window
-            // which view you pass in doesn't matter, it is only used for the window tolken
-            mainView.post(new Runnable() {
-                @Override
-                public void run() {
-                    popupWindow.showAtLocation(mainView, Gravity.CENTER, 0, 0);
-                }
-            });
-        }
-
-        @Override
-        public void onItemUpdate(String numOfNum) {
-            mainView.post(new Runnable() {
-                @Override
-                public void run() {
-                    itemUpdateView.setText(numOfNum);
-                }
-            });
-        }
-
-        @Override
-        public void onInstallFinished() {
-            Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() called" );
-            mainView.post(new Runnable() {
-                @Override
-                public void run() {
-                    popupWindow.dismiss();
-                }
-            });
-            Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() finished" );
-        }
-    };
+    public static InstallCallback installCallback;
+    public void onInstallFinished() {
+        Log.d( DEBUG_TAG, "onInstallFinished() called" );
+        isInstallFilesFinished = true;
+        //get rid of static reference
+        installCallback = null;
+        Log.d( DEBUG_TAG, "calling init() from onInstallFinished()" );
+        init();
+    }
 
     /* public methods */
 
@@ -134,11 +87,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        activity = this; // needed for the popup message in the InstallCallback
-
-        // Create Repository if not created - that will install the assetes if first time
-        Repository repository = Repository.getInstance();
-        repository.init(getApplication());
 
         setContentView( R.layout.activity_main );
 
@@ -154,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             // Check if we have all the necessary permissions, if not: prompt user
             int permission = checkSelfPermission( Manifest.permission.RECORD_AUDIO );
             if ( permission == PackageManager.PERMISSION_GRANTED )
-                init();
+                preinit();
             else
                 requestPermissions( PERMISSIONS, PERMISSIONS_CODE );
         }
@@ -168,7 +116,8 @@ public class MainActivity extends AppCompatActivity {
     public void setContentView(int layoutResID) {
         Log.d( DEBUG_TAG, "setContentView() called" );
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        mainView = inflater.inflate(R.layout.activity_main, null);
+        View mainView = inflater.inflate(R.layout.activity_main, null);
+        installCallback = new InstallCallback(this, mainView);
         super.setContentView(mainView);
     }
 
@@ -181,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             String permission = permissions[i];
             int grantResult = grantResults[i];
             if (permission.equals(Manifest.permission.RECORD_AUDIO) && grantResult == PackageManager.PERMISSION_GRANTED) {
-                init();
+                preinit();
             } else {
                 requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_CODE);
             }
@@ -213,15 +162,24 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private void preinit() {
+
+        if (!isInstallFilesFinished) {
+            // Create Repository if not created - that will install the assets if first time
+            Repository repository = Repository.getInstance();
+            repository.init(getApplication());
+            return;
+        }
+        Log.d( DEBUG_TAG, "calling init() from preinit()" );
+        init();
+    }
+
     private void init() {
 
 //        Log.d( LOG_TAG, "initing MWEngineActivity" );
 
         // get instance of native audio engine
         mAudioEngine = MWEngineManager.getInstance();
-        // optimize activity
-        MWEngine.optimizePerformance( this );
-        // init engine - will only reset activity pointer if engine is already initialized
         mAudioEngine.initAudioEngine(this);
         tracks = mAudioEngine.getTracks();
 

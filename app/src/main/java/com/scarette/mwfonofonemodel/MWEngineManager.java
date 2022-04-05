@@ -3,6 +3,7 @@ package com.scarette.mwfonofonemodel;
 import android.app.Activity;
 import android.content.Context;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -24,34 +25,31 @@ public class MWEngineManager {
      */
     private Limiter _limiter;
     private LPFHPFilter _lpfhpf;
-    private Vector<Track> tracks = new Vector<>();
-    private static HashMap<Integer, Track> tracksMap = new HashMap<Integer, Track>();
-    private int numOfTrack = 3;
+    private final Vector<Track> tracks = new Vector<>();
+    private static final HashMap<Integer, Track> tracksMap = new HashMap<>();
+    private final int numOfTrack = 3;
 
-    private MWEngine _engine;
+    private final MWEngine _engine;
     private SequencerController _sequencerController;
 
-    private boolean _sequencerPlaying = false;
     private boolean _isRecording = false;
     private boolean _inited = false;
     public boolean isAnyPlaying = false;
 
     // AAudio is only supported from Android 8/Oreo onwards.
-    private boolean _supportsAAudio = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
-    private Drivers.types _audioDriver = _supportsAAudio ? Drivers.types.AAUDIO : Drivers.types.OPENSL;
+    private final boolean _supportsAAudio = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
+    private final Drivers.types _audioDriver = _supportsAAudio ? Drivers.types.AAUDIO : Drivers.types.OPENSL;
 
     private int SAMPLE_RATE;
     private int BUFFER_SIZE;
-    private int OUTPUT_CHANNELS = 2; // 1 = mono, 2 = stereo
+    private final int OUTPUT_CHANNELS = 2; // 1 = mono, 2 = stereo
 
 
-    private static int STEPS_PER_MEASURE = 32;  // amount of subdivisions within a single measure
-    private static String LOG_TAG = "MWENGINE"; // logcat identifier
+    private static final String LOG_TAG = "MWENGINE"; // logcat identifier
 
     // hack to remap the file to their proper values
-    private static int[] fileRemap = {0, 1, 2, 3, 4, 6, 5};
+    private static final int[] fileRemap = {0, 1, 2, 3, 4, 6, 5};
 
-    private Activity curActivity;
 
     private static final MWEngineManager MWEngineInstance = new MWEngineManager();
 
@@ -65,17 +63,6 @@ public class MWEngineManager {
 
     public void initAudioEngine(Activity activity) {
 
-        // on config change activity will be reissued and we need to
-        // store the current one for the StateObserver . Will also be
-        // used on the two calls for BUFFER_SIZE and SAMPLE_RATE on initialization, and
-        // by loadWAVAsset( String assetName, String sampleName ) private method.
-        // Note that this reference to activity can be avoided if we find a substitute
-        // for runOnUiThread in the observer; than we can just pass BUFFER_SIZE and SAMPLE_RATE
-        // as parameter to initAudioEngine instead of passing activity and install loadWAVAsset
-        // elsewhere (in mainActivity).
-        curActivity = activity;
-//        Log.d(LOG_TAG, "curActivity set, inited = " + _inited);
-
         if (_inited)
             return;
 
@@ -83,14 +70,17 @@ public class MWEngineManager {
 
         // STEP 1 : preparing the native audio engine
 
+        // optimize activity
+        MWEngine.optimizePerformance(activity);
+
         // get the recommended buffer size for this device (NOTE : lower buffer sizes may
         // provide lower latency, but make sure all buffer sizes are powers of two of
         // the recommended buffer size (overcomes glitching in buffer callbacks )
         // getting the correct sample rate upfront will omit having audio going past the system
         // resampler reducing overall latency
 
-        BUFFER_SIZE = MWEngine.getRecommendedBufferSize(curActivity.getApplicationContext());
-        SAMPLE_RATE = MWEngine.getRecommendedSampleRate(curActivity.getApplicationContext());
+        BUFFER_SIZE = MWEngine.getRecommendedBufferSize(activity.getApplicationContext());
+        SAMPLE_RATE = MWEngine.getRecommendedSampleRate(activity.getApplicationContext());
 
         _engine.createOutput(SAMPLE_RATE, BUFFER_SIZE, OUTPUT_CHANNELS, _audioDriver);
 
@@ -160,22 +150,17 @@ public class MWEngineManager {
 /*        private Vector<SampleEvent> _sampleEvents;
         private SampleEvent _sampleEvent;*/
         private int _sampleLenght;
-        private short[] shortBufffer;
 
         private SampledInstrument _sampler;
         private Limiter sLimiter;
         private ABiquadLPFilter lpFilter;
         private ABiquadHPFilter hpFilter;
         private Limiter flimiter;
-        private FilterHandler filterHandler;
+        private final FilterHandler filterHandler;
         private ReverbSM reverb;
-        private ReverbHandler reverbHandler;
+        private final ReverbHandler reverbHandler;
         private ChannelGroup mainChannel;
 
-        // track parameters
-        private float minFilterCutoff = 50.0f;
-        private float maxFilterCutoff = (float) SAMPLE_RATE / 8;
-        private String curSampleName;
         private int curStartPoint;
         private int curEndPoint;
         private float curPlaybackRate;
@@ -191,7 +176,7 @@ public class MWEngineManager {
 
         private boolean isSet = false;
 
-        private int maxMetroCount = 32;
+        private final int maxMetroCount = 32;
         private int samplePlayCount = -1; // index for the cursorPos array, -1 = no sample playing
         private int smillis;
 
@@ -199,10 +184,10 @@ public class MWEngineManager {
 
 
         private PlaybackListener mPlaybackListener;
-        private SyncedRenderer renderer;
+        private final SyncedRenderer renderer;
         private SyncedRenderer levelMonitor;
 
-        private int[] cursorPos = new int[maxMetroCount];
+        private final int[] cursorPos = new int[maxMetroCount];
 
 
 
@@ -386,7 +371,9 @@ public class MWEngineManager {
                 if (isMetroOn) metronome.stop();
             }
 
-            curSampleName = tag;
+            // track parameters
+            //        private float minFilterCutoff = 50.0f;
+            //        private float maxFilterCutoff = (float) SAMPLE_RATE / 8;
 
             String filePath = Repository.FileUtil.filePaths.get(fileRemap[sampleSelection]);
 //            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
@@ -402,14 +389,14 @@ public class MWEngineManager {
 
 
             // needed for sample start/end progress setting
-            _sampleLenght = SampleManager.getSampleLength(curSampleName);
+            _sampleLenght = SampleManager.getSampleLength(tag);
 //            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleLenght: " + _sampleLenght);
             // get time in millis for probable usage in metronome
             smillis = BufferUtility.bufferToMilliseconds(_sampleLenght, SAMPLE_RATE);
 
 //            for (SampleEvent ev : _sampleEvents) {
             for (SampleEventRange ev : _sampleEvents) {
-                ev.setSample(SampleManager.getSample(curSampleName));
+                ev.setSample(SampleManager.getSample(tag));
                 ev.setBufferRangeStart(curStartPoint);
                 ev.setBufferRangeEnd(curEndPoint);
                 ev.setPlaybackRate(curPlaybackRate);
@@ -452,7 +439,7 @@ public class MWEngineManager {
         }
 
         private void resetCursorArray() {
-            for (int i = 0; i < cursorPos.length; i++) cursorPos[i] = -1;
+            Arrays.fill(cursorPos, -1);
             if (isPlaying) samplePlayCount = 0;
             else samplePlayCount = -1;
         }
@@ -548,8 +535,6 @@ public class MWEngineManager {
 
         private class FilterHandler {
 
-            private float minABiquadFilterCutoff = 20.0f;
-            private float maxABiquadFilterCutoff = 10000.0f;
             private float curABiquadFilterCutoff;
             private float curABiquadFilterQ;
 
@@ -577,6 +562,10 @@ public class MWEngineManager {
 
                 // further modulation for lo-pass offset according to freq to "push" a bit more in the low end
                 float lpoffset = (float) Math.min(curABiquadFilterCutoff + 0.5, 1) * offset;
+
+                // set min and max filter cutoff range
+                float minABiquadFilterCutoff = 20.0f;
+                float maxABiquadFilterCutoff = 10000.0f;
                 // clamp lo-pass cutoff to 1 so it wont go beyond maxfreq and remap to freq range
                 float lpcut = (float) (Math.pow(Math.min(curABiquadFilterCutoff + lpoffset, 1), 2) *
                         (maxABiquadFilterCutoff - minABiquadFilterCutoff)) + minABiquadFilterCutoff;
@@ -607,7 +596,7 @@ public class MWEngineManager {
 
         private class Metronome {
 
-            private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
             ScheduledFuture<?> task;
             private long delay = 1500;
             private int count = 0;
@@ -623,7 +612,7 @@ public class MWEngineManager {
                 isRunning = true;
                 cycle();
             }
-            // First sample (main) already started; start subsequent samples
+            // First sample (main) already started; start subsequent sound bank
             public void startAfter() { // metro switched on after sample already playing
                 count = 1; // always start from 2d sample, first is main sample already playing
                 isRunning = true;
@@ -721,21 +710,19 @@ public class MWEngineManager {
 
                     // for this notification id, the notification value describes the precise buffer offset of the
                     // engine when the notification fired (as a value in the range of 0 - BUFFER_SIZE). using this value
-                    // we can calculate the amount of samples pending until the next step position is reached
+                    // we can calculate the amount of sound bank pending until the next step position is reached
                     // which in turn allows us to calculate the engine latency
 
                     int sequencerPosition = _sequencerController.getStepPosition();
                     int elapsedSamples = _sequencerController.getBufferPosition();
 
 //                    Log.d(LOG_TAG, "seq. position: " + sequencerPosition + ", buffer offset: " + aNotificationValue +
-//                            ", elapsed samples: " + elapsedSamples);
+//                            ", elapsed sound bank: " + elapsedSamples);
                     break;
                 case RECORDED_SNIPPET_READY:
-                    curActivity.runOnUiThread(new Runnable() {
-                        public void run() {
-                            // we run the saving on a different thread to prevent buffer under runs while rendering audio
-                            _engine.saveRecordedSnippet(aNotificationValue); // notification value == snippet buffer index
-                        }
+                    Executors.newSingleThreadScheduledExecutor().execute(() -> {
+                        // we run the saving on a different thread to prevent buffer under runs while rendering audio
+                        _engine.saveRecordedSnippet(aNotificationValue); // notification value == snippet buffer index
                     });
                     break;
                 case RECORDED_SNIPPET_SAVED:
@@ -750,22 +737,6 @@ public class MWEngineManager {
                     break;
             }
         }
-    }
-
-    /* private methods */
-
-    /**
-     * convenience method to load WAV files packaged in the APK
-     * and read their audio content into MWEngine's SampleManager
-     *
-     * @param assetName  {String} assetName filename for the resource in the /assets folder
-     * @param sampleName {String} identifier for the files WAV content inside the SampleManager
-     */
-    private void loadWAVAsset(String assetName, String sampleName) {
-        final Context ctx = curActivity.getApplicationContext();
-        JavaUtilities.createSampleFromAsset(
-                sampleName, ctx.getAssets(), ctx.getCacheDir().getAbsolutePath(), assetName
-        );
     }
 
 }

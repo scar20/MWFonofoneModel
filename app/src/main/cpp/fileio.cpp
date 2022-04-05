@@ -63,11 +63,11 @@ Java_com_scarette_mwfonofonemodel_Repository_setNativeSampleRate(JNIEnv *env, jc
 extern "C"
 JNIEXPORT jshortArray JNICALL
 Java_com_scarette_mwfonofonemodel_Repository_getShortBufferFromFile(JNIEnv *env, jclass clazz, jstring path) {
-    const char *cpath = env->GetStringUTFChars(path, 0);
+    const char *cpath = env->GetStringUTFChars(path, nullptr);
     SndfileHandle file;
     file = SndfileHandle(cpath);
     int channels = file.channels();
-    int frames = file.frames();
+    int64_t frames = file.frames();
     int length = channels * frames;
     short buf[length];
     file.read(buf, length);
@@ -90,18 +90,21 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
                                                     jstring temp_path, jstring source_path,
                                                     jstring dest_path,
                                                     jstring jcount) {
-    const char *cpath = env->GetStringUTFChars(source_path, 0);
-    const char *count = env->GetStringUTFChars(jcount, 0);
+
+    const char *cpath = env->GetStringUTFChars(source_path, nullptr);
+    const char *count = env->GetStringUTFChars(jcount, nullptr);
+
+    LOGD("!! !! !! source_path !! !! !!   : %s\n", cpath);
 
     // use asset manager to open asset by filename
     AAssetManager *mgr = AAssetManager_fromJava(env, am);
 
-    if (mgr == NULL)
+    if (mgr == nullptr)
         return;
 
     AAsset *asset = AAssetManager_open(mgr, cpath, AASSET_MODE_UNKNOWN);
 
-    if (asset == NULL)
+    if (asset == nullptr)
         return;
 
 //    std::vector<char> buffer;
@@ -117,13 +120,13 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
     // as a ByteArray (well, we still can) and read the WAV data from it (in WaveReader, this
     // now fails...) for now we do the wasteful thing by creating a temporary file...
 
-    std::string tempFolder = env->GetStringUTFChars(temp_path, 0);
+    std::string tempFolder = env->GetStringUTFChars(temp_path, nullptr);
     std::string tempFile = tempFolder + "/tmp" + count;
     FILE *tmp = fopen(tempFile.c_str(), "w");
 
-    bool readUsingTempFile = (tmp != 0);
-//    LOGD("!! !! !! readUsingTempFile !! !! !!   : %d\n", readUsingTempFile);
-//    LOGD("!! !! !! tempFile : %s\n", tempFile.c_str());
+    bool readUsingTempFile = (tmp != nullptr);
+    LOGD("!! !! !! readUsingTempFile !! !! !!   : %d\n", readUsingTempFile);
+    LOGD("!! !! !! tempFile : %s\n", tempFile.c_str());
 
     int nb_read = 0;
 
@@ -153,7 +156,7 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
     AAsset_close(asset);
     env->ReleaseStringUTFChars(source_path, cpath);
 
-    const char *coutpath = env->GetStringUTFChars(dest_path, 0);
+    const char *coutpath = env->GetStringUTFChars(dest_path, nullptr);
 
     // if input file samplerate not native, convert before writing to output file,
     // otherwise just write to new output file
@@ -202,8 +205,8 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
             src_data.input_frames = (long) sflength;
             src_data.output_frames = (long) olength;
             src_data.src_ratio = double(nativeSampleRate) / double(sfi_info.samplerate);  // output / input
-//            src_simple(&src_data, SRC_SINC_BEST_QUALITY, sfi_info.channels); // 8t 90063ms, 12t 85592ms, 16t 81786ms, 24t 82228ms, 32t 82777ms, 64t 80864ms
-            src_simple(&src_data, SRC_SINC_MEDIUM_QUALITY, sfi_info.channels); // 8t 18979ms, 16t 18551ms, 32t 17666ms
+            src_simple(&src_data, SRC_SINC_BEST_QUALITY, sfi_info.channels); // 8t 90063ms, 12t 85592ms, 16t 81786ms, 24t 82228ms, 32t 82777ms, 64t 80864ms
+//            src_simple(&src_data, SRC_SINC_MEDIUM_QUALITY, sfi_info.channels); // 8t 18979ms, 16t 18551ms, 32t 17666ms
 //            src_simple(&src_data, SRC_SINC_FASTEST, sfi_info.channels);  // 8047ms
 
 //            LOGD("src_data.input_frames_used : %d output_frames_gen : %d\n",

@@ -8,14 +8,8 @@ import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -115,7 +109,7 @@ public class Repository {
         String destPath = filesDirectory.getPath() + File.separator + rootDir;
         Log.d(DEBUG_TAG,"destPath: " + destPath);
 
-        MainActivity.installCallbackInterface.onInstall();
+        MainActivity.installCallback.onInstall();
 
         Log.d(DEBUG_TAG,"dialog called");
         try {
@@ -124,6 +118,7 @@ public class Repository {
             Log.d(DEBUG_TAG,"Exeption!");
             e.printStackTrace();
         }
+
 
         // create user directory
 //        Log.d(DEBUG_TAG,"creating user dir");
@@ -143,10 +138,10 @@ public class Repository {
             awaitTerminationAfterShutdown(installExecutor);
             long total = System.currentTimeMillis() - start;
             Log.d(DEBUG_TAG,"!!! populate files finished in " + total + "ms");
-            MainActivity.installCallbackInterface.onInstallFinished();
+            FileUtil.setUpSample();
+            MainActivity.installCallback.onInstallFinished();
             Log.d(DEBUG_TAG,"!!! populate files finished");
             executor.shutdown();
-            FileUtil.setUpSample();
         });
 
 
@@ -190,19 +185,16 @@ public class Repository {
             } else { // assuming its a file but possible to be an empty directory - find reliable test
                 File f = new File(sourcepath);
                 if (!f.isDirectory()) { // reliable enough?
-
+                    Log.d(DEBUG_TAG," AIE! ");
                     // Used to give every temp file a unique name
                     String scount = String.valueOf(tempFileCount);
                     tempFileCount++;
 
-                    installExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            // update the install message with <jobCount>/<tempFileCount>
-                            MainActivity.installCallbackInterface.onItemUpdate(++jobCount + "/" + tempFileCount);
-                            // call native method
-                            installFilesFromAssets(am, tempDir, sourcepath, destpath, scount);
-                        }
+                    installExecutor.execute(() -> {
+                        // update the install message with <jobCount>/<tempFileCount>
+                        MainActivity.installCallback.onItemUpdate(++jobCount + "/" + tempFileCount);
+                        // call native method
+                        installFilesFromAssets(am, tempDir, sourcepath, destpath, scount);
                     });
                 }
             }
@@ -255,9 +247,11 @@ public class Repository {
 
         public static void setUpSample() {
             String rootDir = "sound bank";
-            String sourcePath = filesDirectory.getAbsolutePath() + File.separator + rootDir;
+            String sourcePath = filesDirectory.getPath() + File.separator + rootDir;
             File dir = new File(sourcePath);
+            Log.d(DEBUG_TAG,"setUpSample() sourcePath: " + sourcePath);
             String[] list = dir.list();
+            Log.d(DEBUG_TAG,"setUpSample() dir.list: " + Arrays.toString(list));
             int count = 0;
             shortBuffers.clear();
             filePaths.clear();
