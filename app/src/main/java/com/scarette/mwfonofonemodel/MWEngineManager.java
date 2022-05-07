@@ -501,7 +501,7 @@ public class MWEngineManager {
         public void setMetroRate(float progress) {
             final float minTempo = 5f;     // minimum allowed tempo is 5 BPM
             final float maxTempo = 1000f;    // maximum allowed tempo is 1000 BPM
-            final float newTempo = (float) (progress * progress) * (maxTempo - minTempo) + minTempo;
+            final float newTempo = (progress * progress) * (maxTempo - minTempo) + minTempo;
             long millis = (long) (60000f / newTempo);
             //           Log.d(LOG_TAG, "Metro rate: " + newTempo + "  millis: " + millis);
             metronome.setTime(millis);
@@ -609,7 +609,7 @@ public class MWEngineManager {
                 isRunning = true;
                 cycle();
             }
-            // First sample (main) already started; start subsequent sound_bank
+            // First sample (main) already started; start subsequent samples
             public void startAfter() { // metro switched on after sample already playing
                 count = 1; // always start from 2d sample, first is main sample already playing
                 isRunning = true;
@@ -707,14 +707,14 @@ public class MWEngineManager {
 
                     // for this notification id, the notification value describes the precise buffer offset of the
                     // engine when the notification fired (as a value in the range of 0 - BUFFER_SIZE). using this value
-                    // we can calculate the amount of sound_bank pending until the next step position is reached
+                    // we can calculate the amount of samples pending until the next step position is reached
                     // which in turn allows us to calculate the engine latency
 
                     int sequencerPosition = _sequencerController.getStepPosition();
                     int elapsedSamples = _sequencerController.getBufferPosition();
 
 //                    Log.d(LOG_TAG, "seq. position: " + sequencerPosition + ", buffer offset: " + aNotificationValue +
-//                            ", elapsed sound_bank: " + elapsedSamples);
+//                            ", elapsed samples: " + elapsedSamples);
                     break;
                 case RECORDED_SNIPPET_READY:
                     Executors.newSingleThreadScheduledExecutor().execute(() -> {

@@ -7,20 +7,10 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,7 +88,7 @@ public class Repository {
         setNativeSampleRate(NATIVE_SAMPLE_RATE);
 
         filesDirectory = application.getApplicationContext().getFilesDir();
-        File f = new File(filesDirectory, "sound_bank");
+        File f = new File(filesDirectory, "samples");
         tempDir = application.getCacheDir().getAbsolutePath();
 
         if (f.exists()) {
@@ -120,7 +110,7 @@ public class Repository {
 
         start = System.currentTimeMillis();
 
-        String rootDir = "sound_bank";
+        String rootDir = "samples";
 //        String rootDir = "bank";
 //        String userDir = "user sounds";
         AssetManager am = application.getAssets();
@@ -271,7 +261,7 @@ public class Repository {
 
 
         public static void setUpSample() {
-            String rootDir = "sound_bank";
+            String rootDir = "samples";
             String sourcePath = filesDirectory.getPath() + File.separator + rootDir;
             File dir = new File(sourcePath);
             Log.d(DEBUG_TAG, "setUpSample() sourcePath: " + sourcePath);
