@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,15 +29,14 @@ public class TrackFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
-    // hack to remap the file to their proper values
-    private static int[] fileRemap = {0, 1, 2, 3, 4, 6, 5};
-
-
     private static final String LOG_TAG = "MWENGINE_FRAG"; // logcat identifier
 
     private MWEngineManager     mAudioEngine;
 
     private int whichTrack;
+    private boolean isReady = false;
+    private SoundChangeHandler soundChangeHandler;
+    private int curSelection;
 
     private boolean isPlaying = false;
     private boolean isForward = true;
@@ -123,17 +123,19 @@ public class TrackFragment extends Fragment {
         });
 
         Spinner spinner =  view.findViewById( R.id.SampleSpinner);
-        spinner.setOnItemSelectedListener( new SoundChangeHandler() );
+        soundChangeHandler = new SoundChangeHandler();
+        spinner.setOnItemSelectedListener( soundChangeHandler );
 
         // set spinner and waveformview display
 
         trackModel.getSampleSelection().observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-//                short[] buf = FileUtil.shortBuffers.get(fileRemap[integer]);
-                short[] buf = Repository.FileUtil.shortBuffers.get(fileRemap[integer]);
-                mWaveformView.setSamples(buf);
-                spinner.setSelection(integer);
+                if (isReady) {
+                    short[] buf = Repository.FileUtil.shortBuffers.get(integer);
+                    mWaveformView.setSamples(buf);
+                    spinner.setSelection(integer);
+                }
             }
         });
 
@@ -262,6 +264,10 @@ public class TrackFragment extends Fragment {
     }
 
 
+    public void setReady() {
+        isReady = true;
+        soundChangeHandler.select(curSelection);
+    }
 
 
     /* event handlers */
@@ -269,37 +275,17 @@ public class TrackFragment extends Fragment {
     private class SoundChangeHandler implements AdapterView.OnItemSelectedListener {
         public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
 //            Log.d(LOG_TAG, "//////// SoundChangeHandler pos: " + pos);
-            String selectedValue = parent.getItemAtPosition(pos).toString();
-            String name = "";
-            if (selectedValue.toLowerCase().equals("bach")) {
-                name = "000";
-            } else if (selectedValue.toLowerCase().equals("bonjour")) {
-                name = "001";
-            } else if (selectedValue.toLowerCase().equals("cristal")) {
-                name = "002";
-            } else if (selectedValue.toLowerCase().equals("ping-pong")) {
-                name = "003";
-            } else if (selectedValue.toLowerCase().equals("scintillement")) {
-                name = "004";
-            } else if (selectedValue.toLowerCase().equals("tktkt_asc")) {
-                name = "005";
-            }
-            else if (selectedValue.toLowerCase().equals("sin 1000hz 0db")) {
-                name = "006";
-            }
-//            else if (selectedValue.toLowerCase().equals("sin 1000hz -3db")) {
-//                name = "003";
-//            }
-            if ( name != "") {
-                trackModel.setSampleSelection(pos);
-//                trackModel.setSampleName(name);
-                trackModel.resetSampleLength();
-                mWaveformView.setMarkerPosition(mAudioEngine.getTrack(whichTrack).getSampleStart());
-            }
-
+            curSelection = pos;
+            if (isReady) select(pos);
         }
         @Override
         public void onNothingSelected(AdapterView<?> arg0) {}
+
+        void select(int pos) {
+            trackModel.setSampleSelection(pos);
+            trackModel.resetSampleLength();
+            mWaveformView.setMarkerPosition(mAudioEngine.getTrack(whichTrack).getSampleStart());
+        }
     }
 
     private class SampleStartChangeHandler implements SeekBar.OnSeekBarChangeListener {

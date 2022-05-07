@@ -61,6 +61,8 @@ public class InstallCallback {
             popupWindow = null;
         });
         Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() finished" );
-        ((MainActivity)activity).onInstallFinished();
+        mainView.post(() -> {
+            ((MainActivity)activity).onInstallFinished();
+        });
     }
 }

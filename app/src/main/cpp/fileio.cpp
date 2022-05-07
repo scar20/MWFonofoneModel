@@ -34,6 +34,8 @@ sfe_codec_name (int format) {
             return "unsigned 8 bit PCM";
         case SF_FORMAT_FLOAT :
             return "32 bit float";
+        case 0:
+            return "??? format ???";
     }
 }
 
@@ -50,6 +52,8 @@ sfe_file_type (int format) {
             return "RAW file";
         case SF_FORMAT_FLAC :
             return "FLAC file";
+        case 0:
+            return "??? file_type ???";
     }
 }
 
@@ -184,14 +188,19 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
 //        LOGD("Frames after closed  : %ld\n", (long) sfi_info.frames);
 
         // prepare output file
+        // try to create file with standard FILE interface
+        FILE *f = fopen(coutpath, "w");
+//        fclose(f);
         sfo_info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
         sfo_info.channels = sfi_info.channels;
         sfo_info.samplerate = nativeSampleRate;
 //        sfo_info.frames = sfi_info.frames;
 //        LOGD("Frames copied to sfo  : %ld\n", (long) sfo_info.frames);
         sf = sf_open(coutpath, SFM_WRITE, &sfo_info);
+        LOGD("!!! output file error? %s!!!\n", sf_strerror(sf));
+        LOGD("!!! output file path %s!!!\n", coutpath);
         if (sfi_info.samplerate != nativeSampleRate) {
-//            LOGD("!!! File is *not* native sample rate !!!\n");
+            LOGD("!!! File is *not* native sample rate !!!\n");
             const char *version = src_get_version();
 //            LOGD("LibSampleRate version : %s\n", version);
             off64_t olength = static_cast<long>(((double) nativeSampleRate / (double) sfi_info.samplerate) *
@@ -205,8 +214,8 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
             src_data.input_frames = (long) sflength;
             src_data.output_frames = (long) olength;
             src_data.src_ratio = double(nativeSampleRate) / double(sfi_info.samplerate);  // output / input
-            src_simple(&src_data, SRC_SINC_BEST_QUALITY, sfi_info.channels); // 8t 90063ms, 12t 85592ms, 16t 81786ms, 24t 82228ms, 32t 82777ms, 64t 80864ms
-//            src_simple(&src_data, SRC_SINC_MEDIUM_QUALITY, sfi_info.channels); // 8t 18979ms, 16t 18551ms, 32t 17666ms
+//            src_simple(&src_data, SRC_SINC_BEST_QUALITY, sfi_info.channels); // 8t 90063ms, 12t 85592ms, 16t 81786ms, 24t 82228ms, 32t 82777ms, 64t 80864ms
+            src_simple(&src_data, SRC_SINC_MEDIUM_QUALITY, sfi_info.channels); // 8t 18979ms, 16t 18551ms, 32t 17666ms
 //            src_simple(&src_data, SRC_SINC_FASTEST, sfi_info.channels);  // 8047ms
 
 //            LOGD("src_data.input_frames_used : %d output_frames_gen : %d\n",
@@ -214,11 +223,12 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
 
             // write converted output file
 //            LOGD("!!! Write converted file !!!\n");
-            sf_writef_float(sf, convbuf, src_data.output_frames_gen);
-//            LOGD("!!! %lld sample writen !!!\n", src_data.output_frames_gen);
+            sf_count_t numframe = sf_writef_float(sf, convbuf, src_data.output_frames_gen);
+            LOGD("!!! %ld frames_gen %lld sample writen !!!\n", src_data.output_frames_gen, numframe);
+            free(convbuf);
 
         } else {
-//            LOGD("!!! File is native sample rate !!!\n");
+            LOGD("!!! File is native sample rate !!!\n");
 //            LOGD("!!! sfi_info.frame %lld  !!!\n", sfi_info.frames);
             sf_writef_float(sf, sfbuf, sfi_info.frames);
             free(sfbuf);
@@ -232,9 +242,9 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
         const char *formatcheck = sfe_codec_name(info_check.format);
         const char *filecheck = sfe_file_type(info_check.format);
         LOGD("!!! CHECK file #%s %s !!!\n", count, coutpath);
-        LOGD("error?   : %s\n", sf_strerror(sf));
-        LOGD("Format   : %s  codec : %s\n", filecheck, formatcheck);
-        LOGD("Sample Rate : %d\n", info_check.samplerate);
+        LOGD("!!! CHECK error?   : %s\n", sf_strerror(sf));
+        LOGD("!!! CHECK Format   : %s  codec : %s\n", filecheck, formatcheck);
+        LOGD("!!! CHECK Sample Rate : %d\n", info_check.samplerate);
 //        LOGD("Channels : %d\n", info_check.channels);
 //        LOGD("Frames   : %ld\n", (long) sfi_info.frames);
         sf_close(sf);

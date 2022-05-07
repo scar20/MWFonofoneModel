@@ -47,9 +47,6 @@ public class MWEngineManager {
 
     private static final String LOG_TAG = "MWENGINE"; // logcat identifier
 
-    // hack to remap the file to their proper values
-    private static final int[] fileRemap = {0, 1, 2, 3, 4, 6, 5};
-
 
     private static final MWEngineManager MWEngineInstance = new MWEngineManager();
 
@@ -375,7 +372,7 @@ public class MWEngineManager {
             //        private float minFilterCutoff = 50.0f;
             //        private float maxFilterCutoff = (float) SAMPLE_RATE / 8;
 
-            String filePath = Repository.FileUtil.filePaths.get(fileRemap[sampleSelection]);
+            String filePath = Repository.FileUtil.filePaths.get(sampleSelection);
 //            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " filePath: " + filePath);
             if (SampleManager.hasSample(tag))
                 SampleManager.removeSample(tag, true);
@@ -612,7 +609,7 @@ public class MWEngineManager {
                 isRunning = true;
                 cycle();
             }
-            // First sample (main) already started; start subsequent sound bank
+            // First sample (main) already started; start subsequent sound_bank
             public void startAfter() { // metro switched on after sample already playing
                 count = 1; // always start from 2d sample, first is main sample already playing
                 isRunning = true;
@@ -710,14 +707,14 @@ public class MWEngineManager {
 
                     // for this notification id, the notification value describes the precise buffer offset of the
                     // engine when the notification fired (as a value in the range of 0 - BUFFER_SIZE). using this value
-                    // we can calculate the amount of sound bank pending until the next step position is reached
+                    // we can calculate the amount of sound_bank pending until the next step position is reached
                     // which in turn allows us to calculate the engine latency
 
                     int sequencerPosition = _sequencerController.getStepPosition();
                     int elapsedSamples = _sequencerController.getBufferPosition();
 
 //                    Log.d(LOG_TAG, "seq. position: " + sequencerPosition + ", buffer offset: " + aNotificationValue +
-//                            ", elapsed sound bank: " + elapsedSamples);
+//                            ", elapsed sound_bank: " + elapsedSamples);
                     break;
                 case RECORDED_SNIPPET_READY:
                     Executors.newSingleThreadScheduledExecutor().execute(() -> {

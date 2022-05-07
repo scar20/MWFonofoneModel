@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -21,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
 
+import java.util.List;
 import java.util.Vector;
 
 import nl.igorski.mwengine.MWEngine;
@@ -74,8 +76,13 @@ public class MainActivity extends AppCompatActivity {
         isInstallFilesFinished = true;
         //get rid of static reference
         installCallback = null;
-        Log.d( DEBUG_TAG, "calling init() from onInstallFinished()" );
-        init();
+        List<Fragment> fList = mFragmentManager.getFragments();
+        Log.d( DEBUG_TAG, "onInstallFinished() fList num: " + fList.size());
+        for (Fragment f : fList) ((TrackFragment)f).setReady();
+        // Do not init() here, that will be handled by onWindowFocusChanged( boolean hasFocus )
+
+//        Log.d( DEBUG_TAG, "calling init() from onInstallFinished()" );
+//        init();
     }
 
     /* public methods */
@@ -165,102 +172,112 @@ public class MainActivity extends AppCompatActivity {
     private void preinit() {
 
         if (!isInstallFilesFinished) {
+            Log.d( DEBUG_TAG, "preinit() initialize repository");
             // Create Repository if not created - that will install the assets if first time
             Repository repository = Repository.getInstance();
             repository.init(getApplication());
             return;
         }
-        Log.d( DEBUG_TAG, "calling init() from preinit()" );
-        init();
+        // Do not init() here, that will be handled by onWindowFocusChanged( boolean hasFocus )
+//        Log.d( DEBUG_TAG, "calling init() from preinit()" );
+//        init();
     }
 
     private void init() {
+        if (true) {
 
-//        Log.d( LOG_TAG, "initing MWEngineActivity" );
+            Log.d(DEBUG_TAG, "initing MWEngineActivity");
 
-        // get instance of native audio engine
-        mAudioEngine = MWEngineManager.getInstance();
-        mAudioEngine.initAudioEngine(this);
-        tracks = mAudioEngine.getTracks();
+            // get instance of native audio engine
+            mAudioEngine = MWEngineManager.getInstance();
+            mAudioEngine.initAudioEngine(this);
+            tracks = mAudioEngine.getTracks();
 
-        // set up view model
-        viewModel = new ViewModelProvider(this).get(TracksViewModel.class);
+            // set up view model
+            viewModel = new ViewModelProvider(this).get(TracksViewModel.class);
 
-        // init fragments - this also allow the creation of each track in viewModel
-        mFragmentManager = getSupportFragmentManager();
-        TrackFragment track1 = TrackFragment.newInstance(0);
-        TrackFragment track2 = TrackFragment.newInstance(1);
-        TrackFragment track3 = TrackFragment.newInstance(2);
-        FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        transaction.add(R.id.track1_container, track1, null);
-        transaction.add(R.id.track2_container, track2, null);
-        transaction.add(R.id.track3_container, track3, null);
-        transaction.commitNow();
+            // init fragments - this also allow the creation of each track in viewModel
+            mFragmentManager = getSupportFragmentManager();
+            TrackFragment track1 = TrackFragment.newInstance(0);
+            TrackFragment track2 = TrackFragment.newInstance(1);
+            TrackFragment track3 = TrackFragment.newInstance(2);
+            FragmentTransaction transaction = mFragmentManager.beginTransaction();
+            transaction.add(R.id.track1_container, track1, null);
+            transaction.add(R.id.track2_container, track2, null);
+            transaction.add(R.id.track3_container, track3, null);
+            transaction.commitNow();
 
-        // set mixer view
-        LinearLayoutCompat mixerView = findViewById(R.id.mixer_view);
-        mixerView.setVisibility(View.GONE);
-        mixerButton = findViewById(R.id.mixer_button);
-        mixerButton.setOnClickListener(view -> {
-            isMixerOpen = !isMixerOpen;
-            mixerView.setVisibility(isMixerOpen ? View.VISIBLE : View.GONE);
-        });
+            // set mixer view
+            LinearLayoutCompat mixerView = findViewById(R.id.mixer_view);
+            mixerView.setVisibility(View.GONE);
+            mixerButton = findViewById(R.id.mixer_button);
+            mixerButton.setOnClickListener(view -> {
+                isMixerOpen = !isMixerOpen;
+                mixerView.setVisibility(isMixerOpen ? View.VISIBLE : View.GONE);
+            });
 
-        SeekBar mixerVol1 = findViewById(R.id.MixerVolumeSlider1);
-        viewModel.getTrack(0).getVolume().observe(this, aFloat ->
-                mixerVol1.setProgress((int)(aFloat * 100)));
+            SeekBar mixerVol1 = findViewById(R.id.MixerVolumeSlider1);
+            viewModel.getTrack(0).getVolume().observe(this, aFloat ->
+                    mixerVol1.setProgress((int) (aFloat * 100)));
 
-        mixerVol1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                viewModel.getTrack(0).setVolume(seekBar.getProgress() / 100f);
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
+            mixerVol1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    viewModel.getTrack(0).setVolume(seekBar.getProgress() / 100f);
+                }
 
-        SeekBar mixerVol2 = findViewById(R.id.MixerVolumeSlider2);
-        viewModel.getTrack(1).getVolume().observe(this, aFloat ->
-                mixerVol2.setProgress((int)(aFloat * 100)));
-        mixerVol2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                viewModel.getTrack(1).setVolume(seekBar.getProgress() / 100f);
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
 
-        SeekBar mixerVol3 = findViewById(R.id.MixerVolumeSlider3);
-        viewModel.getTrack(2).getVolume().observe(this, aFloat ->
-                mixerVol3.setProgress((int)(aFloat * 100)));
-        mixerVol3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                viewModel.getTrack(2).setVolume(seekBar.getProgress() / 100f);
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+            });
 
-        _inited = true;
+            SeekBar mixerVol2 = findViewById(R.id.MixerVolumeSlider2);
+            viewModel.getTrack(1).getVolume().observe(this, aFloat ->
+                    mixerVol2.setProgress((int) (aFloat * 100)));
+            mixerVol2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    viewModel.getTrack(1).setVolume(seekBar.getProgress() / 100f);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+            });
+
+            SeekBar mixerVol3 = findViewById(R.id.MixerVolumeSlider3);
+            viewModel.getTrack(2).getVolume().observe(this, aFloat ->
+                    mixerVol3.setProgress((int) (aFloat * 100)));
+            mixerVol3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    viewModel.getTrack(2).setVolume(seekBar.getProgress() / 100f);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+            });
+
+            _inited = true;
+        }
     }
 
     @Override
     public void onWindowFocusChanged( boolean hasFocus ) {
-//        Log.d( LOG_TAG, "window focus changed for MWEngineActivity, has focus > " + hasFocus );
+        Log.d( DEBUG_TAG, "window focus changed for MWEngineActivity, has focus > " + hasFocus );
 
         if ( !hasFocus ) {
             // suspending the app - halt audio rendering in MWEngine Thread to save CPU cycles
@@ -269,10 +286,14 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             // returning to the app
-            if ( !_inited )
+            if ( !_inited ) {
+                Log.d( DEBUG_TAG, "hasFocus && !_inited ");
                 init();          // initialize this example application
-            else
-                mAudioEngine.start(); // resumes audio rendering
+            }
+            else if (isInstallFilesFinished) {
+                Log.d( DEBUG_TAG, "hasFocus && isInstallFilesFinished ");
+                mAudioEngine.start(); // already inited, just resumes audio rendering
+            }
         }
     }
 

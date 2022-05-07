@@ -7,9 +7,20 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,15 +33,15 @@ public class Repository {
     private static int NATIVE_SAMPLE_RATE;
 
 
-    private static int getRecommendedSampleRate( Context context ) {
+    private static int getRecommendedSampleRate(Context context) {
         String SR_CHECK = null;
 
         // API level 17 available ?  Use the sample rate provided by AudioManager.getProperty(PROPERTY_OUTPUT_SAMPLE_RATE)
         // to prevent the buffers from taking a detour through the system resampler
-        if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 ) {
-            SR_CHECK = ((AudioManager) context.getSystemService( Context.AUDIO_SERVICE )).getProperty( AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            SR_CHECK = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE)).getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
         }
-        return ( SR_CHECK != null ) ? Integer.parseInt( SR_CHECK ) : 48000;
+        return (SR_CHECK != null) ? Integer.parseInt(SR_CHECK) : 48000;
     }
 
 //    private final SoundItemDao soundItemDao;
@@ -43,7 +54,11 @@ public class Repository {
 //    private DirectoryItem userDirectory;
 
     private static File filesDirectory;
-    public static File getFileDirectory() { return filesDirectory; }
+
+    public static File getFileDirectory() {
+        return filesDirectory;
+    }
+
     private String tempDir;
 
     private static final int NUMBER_OF_THREADS = 16;
@@ -57,12 +72,15 @@ public class Repository {
     public interface SetUserDirectoryCB {
 //        void setUserDirectory(DirectoryItem directory);
     }
+
     // for testing
     private static long start;
 
     // "Singletonized" Repository
     private static Repository repositoryInstance = null;
-    Repository() { }
+
+    Repository() {
+    }
 
     public static Repository getInstance() { // initialized from MainActivity, called by viewmodel
         if (repositoryInstance == null) repositoryInstance = new Repository();
@@ -76,22 +94,22 @@ public class Repository {
         // Executors.newSingleThreadScheduledExecutor().execute { //here }
         /////////////////////////////////////////////////////////
 
-        NATIVE_SAMPLE_RATE = getRecommendedSampleRate( application.getApplicationContext() );
+        NATIVE_SAMPLE_RATE = getRecommendedSampleRate(application.getApplicationContext());
         setNativeSampleRate(NATIVE_SAMPLE_RATE);
 
-        filesDirectory = application.getFilesDir();
-        File f = new File(filesDirectory, "sound bank");
+        filesDirectory = application.getApplicationContext().getFilesDir();
+        File f = new File(filesDirectory, "sound_bank");
         tempDir = application.getCacheDir().getAbsolutePath();
 
         if (f.exists()) {
             boolean deleted = deleteDirectory(f);
-            Log.d(DEBUG_TAG,"directories deleted: " + deleted);
+            Log.d(DEBUG_TAG, "directories deleted: " + deleted);
         }
         // if directory list is empty the database have not been populated yet
         // populate the database and create user directory on local storage
         if (!f.exists()) {
 //            MainActivity.callbackInterface.onInstall();
-            Log.d(DEBUG_TAG,"list is empty, populate");
+            Log.d(DEBUG_TAG, "list is empty, populate");
             populateDefaultFiles(application);
         }
 
@@ -102,20 +120,20 @@ public class Repository {
 
         start = System.currentTimeMillis();
 
-        String rootDir = "sound bank";
-        String rootDir2 = "sound bank2";
+        String rootDir = "sound_bank";
+//        String rootDir = "bank";
 //        String userDir = "user sounds";
         AssetManager am = application.getAssets();
         String destPath = filesDirectory.getPath() + File.separator + rootDir;
-        Log.d(DEBUG_TAG,"destPath: " + destPath);
+        Log.d(DEBUG_TAG, "destPath: " + destPath);
 
         MainActivity.installCallback.onInstall();
 
-        Log.d(DEBUG_TAG,"dialog called");
+        Log.d(DEBUG_TAG, "dialog called");
         try {
             copyAssets(am, rootDir, destPath);
-        } catch (IOException e){
-            Log.d(DEBUG_TAG,"Exeption!");
+        } catch (IOException e) {
+            Log.d(DEBUG_TAG, "Exeption!");
             e.printStackTrace();
         }
 
@@ -137,55 +155,60 @@ public class Repository {
         executor.execute(() -> {
             awaitTerminationAfterShutdown(installExecutor);
             long total = System.currentTimeMillis() - start;
-            Log.d(DEBUG_TAG,"!!! populate files finished in " + total + "ms");
+            Log.d(DEBUG_TAG, "!!! populate files finished in " + total + "ms");
             FileUtil.setUpSample();
             MainActivity.installCallback.onInstallFinished();
-            Log.d(DEBUG_TAG,"!!! populate files finished");
+            Log.d(DEBUG_TAG, "!!! populate files finished");
             executor.shutdown();
         });
 
 
- //       Log.d(DEBUG_TAG,"populate files finished");
+        //       Log.d(DEBUG_TAG,"populate files finished");
     }
 
     public void awaitTerminationAfterShutdown(ExecutorService threadPool) {
         threadPool.shutdown();
-        Log.d(DEBUG_TAG,"threadPool.shutdown() waiting for threads to finish");
+        Log.d(DEBUG_TAG, "threadPool.shutdown() waiting for threads to finish");
         try {
-            Log.d(DEBUG_TAG,"entering threadPool.awaitTermination try block");
+            Log.d(DEBUG_TAG, "entering threadPool.awaitTermination try block");
             if (!threadPool.awaitTermination(120, TimeUnit.SECONDS)) {
                 threadPool.shutdownNow();
-                Log.d(DEBUG_TAG,"!threadPool.awaitTermination expired threadPool.shutdownNow()");
+                Log.d(DEBUG_TAG, "!threadPool.awaitTermination expired threadPool.shutdownNow()");
             }
         } catch (InterruptedException ex) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
-            Log.d(DEBUG_TAG,"threadPool InterruptedException : threads interrupted");
+            Log.d(DEBUG_TAG, "threadPool InterruptedException : threads interrupted");
         }
-        Log.d(DEBUG_TAG,"threadPool.shutdown() threads effectively finished");
+        Log.d(DEBUG_TAG, "threadPool.shutdown() threads effectively finished");
     }
 
+
     private void copyAssets(AssetManager am, String source, String dest) throws IOException {
+
+        Log.d(DEBUG_TAG, "create directory: " + dest);
+        createDirectory(dest); // first create the directory
 
         final String[] list = am.list(source);
 
         for (final String name : list) {
             final String sourcepath = source + File.separator + name;
             final String destpath = dest + File.separator + name;
+            Log.d(DEBUG_TAG, "************** sourcepath : " + sourcepath);
 
             AtomicReferenceArray<String> sublist = new AtomicReferenceArray<>(am.list(sourcepath));
-            if (sublist.length() != 0) { // its a directory
-                // create directory and recurse
-                Log.d(DEBUG_TAG,"create directory: " + destpath);
+            if (sublist.length() != 0) { // its a directory, recurse, dir will be created in the next recursion
+                //  recurse
+//                Log.d(DEBUG_TAG, "create directory: " + destpath);
                 // name minus the first three digits characters
-                String dirdestpath = dest + File.separator + name.substring(3);
-                createDirectory(dirdestpath);
-                copyAssets(am, sourcepath, dirdestpath);
+//                String dirdestpath = dest + File.separator + name.substring(3);
+//                createDirectory(dirdestpath);
+                copyAssets(am, sourcepath, destpath);
 
             } else { // assuming its a file but possible to be an empty directory - find reliable test
                 File f = new File(sourcepath);
                 if (!f.isDirectory()) { // reliable enough?
-                    Log.d(DEBUG_TAG," AIE! ");
+                    //     Log.d(DEBUG_TAG," AIE! ");
                     // Used to give every temp file a unique name
                     String scount = String.valueOf(tempFileCount);
                     tempFileCount++;
@@ -194,6 +217,7 @@ public class Repository {
                         // update the install message with <jobCount>/<tempFileCount>
                         MainActivity.installCallback.onItemUpdate(++jobCount + "/" + tempFileCount);
                         // call native method
+                        Log.d(DEBUG_TAG, " destPath: " + destpath);
                         installFilesFromAssets(am, tempDir, sourcepath, destpath, scount);
                     });
                 }
@@ -206,9 +230,9 @@ public class Repository {
         File file = new File(directoryPath);
         if (!file.exists()) {
             if (file.mkdirs()) {
-                Log.d(DEBUG_TAG,"Directory is created!");
+                Log.d(DEBUG_TAG, "Directory is created!");
             } else {
-                Log.d(DEBUG_TAG,"Failed to create directory!");
+                Log.d(DEBUG_TAG, "Failed to create directory!");
             }
         }
     }
@@ -232,7 +256,7 @@ public class Repository {
 
     private native static void setNativeSampleRate(int sampleRate);
 
-    private native static short [] getShortBufferFromFile(String path);
+    private native static short[] getShortBufferFromFile(String path);
 
     private native static void installFilesFromAssets(AssetManager am, String tempDir, String source, String destPath, String count);
 
@@ -243,27 +267,59 @@ public class Repository {
 
         public static Vector<short[]> shortBuffers = new Vector<>();
         public static Vector<String> filePaths = new Vector<>();
+        public static HashMap<Integer, String> remap = new HashMap<>();
 
 
         public static void setUpSample() {
-            String rootDir = "sound bank";
+            String rootDir = "sound_bank";
             String sourcePath = filesDirectory.getPath() + File.separator + rootDir;
             File dir = new File(sourcePath);
-            Log.d(DEBUG_TAG,"setUpSample() sourcePath: " + sourcePath);
+            Log.d(DEBUG_TAG, "setUpSample() sourcePath: " + sourcePath);
             String[] list = dir.list();
-            Log.d(DEBUG_TAG,"setUpSample() dir.list: " + Arrays.toString(list));
-            int count = 0;
+            Log.d(DEBUG_TAG, "setUpSample() dir.list: " + Arrays.toString(list));
+
             shortBuffers.clear();
             filePaths.clear();
             for (String name : list) {
                 String filePath = sourcePath + File.separator + name;
+                remap.put(computePosition(name), filePath);
+            }
+            for (int i=0; i<remap.size(); i++) {
+                String filePath = remap.get(i);
                 filePaths.add(filePath);
                 short[] buf;
                 buf = getAudioSample(filePath);
                 shortBuffers.add(buf);
             }
-    //        for (short[] b : shortBuffers)
-    //            Log.d(LOG_TAG, "shortBuffers: " + b.length);
+            Log.d(DEBUG_TAG, "setUpSample() filePaths.list: " + Arrays.toString(filePaths.toArray()));
+        }
+
+        private static int computePosition(String name) {
+            int result = 0;
+            switch (name) {
+                case "bach2_44.wav":
+                    result = 0;
+                    break;
+                case "bonjour_hello44_16bit.wav":
+                    result = 1;
+                    break;
+                case "cristal.wav":
+                    result = 2;
+                    break;
+                case "ping_pong.wav":
+                    result = 3;
+                    break;
+                case "scintillement.wav":
+                    result = 4;
+                    break;
+                case "t_k_t_k_t_asc.wav":
+                    result = 5;
+                    break;
+                case "sin_1000Hz_0dBFS_5s_44.wav":
+                    result = 6;
+                    break;
+            }
+            return result;
         }
 
     }
