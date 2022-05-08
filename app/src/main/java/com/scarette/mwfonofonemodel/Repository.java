@@ -284,6 +284,7 @@ public class Repository {
             Log.d(DEBUG_TAG, "setUpSample() filePaths.list: " + Arrays.toString(filePaths.toArray()));
         }
 
+        // helper to order samples files as the are listed in the menu
         private static int computePosition(String name) {
             int result = 0;
             switch (name) {
