@@ -224,7 +224,7 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
             // write converted output file
 //            LOGD("!!! Write converted file !!!\n");
             sf_count_t numframe = sf_writef_float(sf, convbuf, src_data.output_frames_gen);
-            LOGD("!!! %ld frames_gen %lld sample writen !!!\n", src_data.output_frames_gen, numframe);
+            LOGD("!!! file %s %ld frames_gen %lld sample writen !!!\n", coutpath, src_data.output_frames_gen, numframe);
             free(convbuf);
 
         } else {
@@ -241,10 +241,11 @@ Java_com_scarette_mwfonofonemodel_Repository_installFilesFromAssets(JNIEnv *env,
         sf = sf_open(coutpath, SFM_READ, &info_check);
         const char *formatcheck = sfe_codec_name(info_check.format);
         const char *filecheck = sfe_file_type(info_check.format);
-        LOGD("!!! CHECK file #%s %s !!!\n", count, coutpath);
-        LOGD("!!! CHECK error?   : %s\n", sf_strerror(sf));
-        LOGD("!!! CHECK Format   : %s  codec : %s\n", filecheck, formatcheck);
-        LOGD("!!! CHECK Sample Rate : %d\n", info_check.samplerate);
+        LOGD("!!! job #%s CHECK file %s !!!\n", count, coutpath);
+        LOGD("!!! job #%s CHECK error?   : %s\n", count, sf_strerror(sf));
+        LOGD("!!! job #%s CHECK Format   : %s  codec : %s\n", count, filecheck, formatcheck);
+        LOGD("!!! job #%s CHECK Sample Rate : %d\n", count, info_check.samplerate);
+        LOGD("!!! job #%s CHECK Frames : %d\n", count, info_check.frames);
 //        LOGD("Channels : %d\n", info_check.channels);
 //        LOGD("Frames   : %ld\n", (long) sfi_info.frames);
         sf_close(sf);

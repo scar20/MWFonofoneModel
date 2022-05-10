@@ -2,6 +2,7 @@ package com.scarette.mwfonofonemodel;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -386,8 +387,8 @@ public class MWEngineManager {
 
 
             // needed for sample start/end progress setting
-            _sampleLenght = SampleManager.getSampleLength(tag);
-//            Log.d(LOG_TAG, "!!!!!! track: " + curSampleName + " sampleLenght: " + _sampleLenght);
+            _sampleLenght = SampleManager.getSampleLength(tag)-1; // HACK!
+            Log.d(LOG_TAG, "!!!!!! tag: " + tag + " sampleLenght: " + _sampleLenght);
             // get time in millis for probable usage in metronome
             smillis = BufferUtility.bufferToMilliseconds(_sampleLenght, SAMPLE_RATE);
 
