@@ -74,12 +74,12 @@ public class MainActivity extends AppCompatActivity {
     public static InstallCallback installCallback;
 
     public void onInstallFinished() {
-        Log.d(DEBUG_TAG, "onInstallFinished() called");
+//        Log.d(DEBUG_TAG, "onInstallFinished() called");
         isInstallFilesFinished = true;
         //get rid of static reference
         installCallback = null;
         List<Fragment> fList = mFragmentManager.getFragments();
-        Log.d(DEBUG_TAG, "onInstallFinished() fList num: " + fList.size());
+//        Log.d(DEBUG_TAG, "onInstallFinished() fList num: " + fList.size());
         for (Fragment f : fList) ((TrackFragment) f).setReady();
         // Do not init() here, that will be handled by onWindowFocusChanged( boolean hasFocus )
 
@@ -111,10 +111,10 @@ public class MainActivity extends AppCompatActivity {
             // Check if we have all the necessary permissions, if not: prompt user
             int permission = checkSelfPermission(Manifest.permission.RECORD_AUDIO);
             if (permission == PackageManager.PERMISSION_GRANTED) {
-                Log.d(DEBUG_TAG, "permission == PackageManager.PERMISSION_GRANTED, preinit()");
+//                Log.d(DEBUG_TAG, "permission == PackageManager.PERMISSION_GRANTED, preinit()");
                 preinit();
             } else {
-                Log.d(DEBUG_TAG, "requesting permission");
+//                Log.d(DEBUG_TAG, "requesting permission");
                 requestPermissions(PERMISSIONS, PERMISSIONS_CODE);
             }
 
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void setContentView(int layoutResID) {
-        Log.d(DEBUG_TAG, "setContentView() called");
+//        Log.d(DEBUG_TAG, "setContentView() called");
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View mainView = inflater.inflate(R.layout.activity_main, null);
         installCallback = new InstallCallback(this, mainView);
@@ -143,10 +143,10 @@ public class MainActivity extends AppCompatActivity {
             String permission = permissions[i];
             int grantResult = grantResults[i];
             if (permission.equals(Manifest.permission.RECORD_AUDIO) && grantResult == PackageManager.PERMISSION_GRANTED) {
-                Log.d(DEBUG_TAG, "permission result == PackageManager.PERMISSION_GRANTED, preinit()");
+//                Log.d(DEBUG_TAG, "permission result == PackageManager.PERMISSION_GRANTED, preinit()");
                 preinit();
             } else {
-                Log.d(DEBUG_TAG, "permission result not granted, send new requestPermission");
+//                Log.d(DEBUG_TAG, "permission result not granted, send new requestPermission");
                 requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_CODE);
             }
         }
@@ -180,12 +180,12 @@ public class MainActivity extends AppCompatActivity {
     private void preinit() {
 
         if (!isInstallFilesFinished && !isPreInited) {
-            Log.d(DEBUG_TAG, "preinit() initialize repository");
+//            Log.d(DEBUG_TAG, "preinit() initialize repository");
             // Create Repository if not created - that will install the assets if first time
+            isPreInited = true; // set this first
             Repository repository = Repository.getInstance();
             repository.init(getApplication());
-            isPreInited = true;
-            return;
+//            isPreInited = true;
         }
 
         // Do not init() here, that will be handled by onWindowFocusChanged( boolean hasFocus )
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         if (true) {
 
-            Log.d(DEBUG_TAG, "initing MWEngineActivity");
+//            Log.d(DEBUG_TAG, "initing MWEngineActivity");
 
             // get instance of native audio engine
             mAudioEngine = MWEngineManager.getInstance();
@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        Log.d(DEBUG_TAG, "window focus changed for MWEngineActivity, has focus > " + hasFocus);
+//        Log.d(DEBUG_TAG, "window focus changed for MWEngineActivity, has focus > " + hasFocus);
 
         if (!hasFocus) {
             // suspending the app - halt audio rendering in MWEngine Thread to save CPU cycles
@@ -296,10 +296,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // returning to the app
             if (!_inited) {
-                Log.d(DEBUG_TAG, "hasFocus && !_inited ");
+//                Log.d(DEBUG_TAG, "hasFocus && !_inited ");
                 init();          // initialize this example application
             } else if (isInstallFilesFinished) {
-                Log.d(DEBUG_TAG, "hasFocus && isInstallFilesFinished ");
+//                Log.d(DEBUG_TAG, "hasFocus && isInstallFilesFinished ");
                 mAudioEngine.start(); // already inited, just resumes audio rendering
             }
         }

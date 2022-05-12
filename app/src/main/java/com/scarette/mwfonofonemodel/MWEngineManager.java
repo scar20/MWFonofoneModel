@@ -388,7 +388,7 @@ public class MWEngineManager {
 
             // needed for sample start/end progress setting
             _sampleLenght = SampleManager.getSampleLength(tag)-1; // HACK!
-            Log.d(LOG_TAG, "!!!!!! tag: " + tag + " sampleLenght: " + _sampleLenght);
+//            Log.d(LOG_TAG, "!!!!!! tag: " + tag + " sampleLenght: " + _sampleLenght);
             // get time in millis for probable usage in metronome
             smillis = BufferUtility.bufferToMilliseconds(_sampleLenght, SAMPLE_RATE);
 

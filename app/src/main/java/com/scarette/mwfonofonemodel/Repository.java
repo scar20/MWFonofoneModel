@@ -93,13 +93,13 @@ public class Repository {
 
         if (f.exists()) {
             boolean deleted = deleteDirectory(f);
-            Log.d(DEBUG_TAG, "directories deleted: " + deleted);
+//            Log.d(DEBUG_TAG, "directories deleted: " + deleted);
         }
         // if directory list is empty the database have not been populated yet
         // populate the database and create user directory on local storage
         if (!f.exists()) {
 //            MainActivity.callbackInterface.onInstall();
-            Log.d(DEBUG_TAG, "list is empty, populate");
+//            Log.d(DEBUG_TAG, "list is empty, populate");
             populateDefaultFiles(application);
         }
 
@@ -115,15 +115,15 @@ public class Repository {
 //        String userDir = "user sounds";
         AssetManager am = application.getAssets();
         String destPath = filesDirectory.getPath() + File.separator + rootDir;
-        Log.d(DEBUG_TAG, "destPath: " + destPath);
+//        Log.d(DEBUG_TAG, "destPath: " + destPath);
 
         MainActivity.installCallback.onInstall();
 
-        Log.d(DEBUG_TAG, "dialog called");
+//        Log.d(DEBUG_TAG, "dialog called");
         try {
             copyAssets(am, rootDir, destPath);
         } catch (IOException e) {
-            Log.d(DEBUG_TAG, "Exeption!");
+//            Log.d(DEBUG_TAG, "Exeption!");
             e.printStackTrace();
         }
 
@@ -145,10 +145,10 @@ public class Repository {
         executor.execute(() -> {
             awaitTerminationAfterShutdown(installExecutor);
             long total = System.currentTimeMillis() - start;
-            Log.d(DEBUG_TAG, "!!! populate files finished in " + total + "ms");
+//            Log.d(DEBUG_TAG, "!!! populate files finished in " + total + "ms");
             FileUtil.setUpSample();
             MainActivity.installCallback.onInstallFinished();
-            Log.d(DEBUG_TAG, "!!! populate files finished");
+//            Log.d(DEBUG_TAG, "!!! populate files finished");
             executor.shutdown();
         });
 
@@ -158,25 +158,25 @@ public class Repository {
 
     public void awaitTerminationAfterShutdown(ExecutorService threadPool) {
         threadPool.shutdown();
-        Log.d(DEBUG_TAG, "threadPool.shutdown() waiting for threads to finish");
+//        Log.d(DEBUG_TAG, "threadPool.shutdown() waiting for threads to finish");
         try {
-            Log.d(DEBUG_TAG, "entering threadPool.awaitTermination try block");
+//            Log.d(DEBUG_TAG, "entering threadPool.awaitTermination try block");
             if (!threadPool.awaitTermination(120, TimeUnit.SECONDS)) {
                 threadPool.shutdownNow();
-                Log.d(DEBUG_TAG, "!threadPool.awaitTermination expired threadPool.shutdownNow()");
+//                Log.d(DEBUG_TAG, "!threadPool.awaitTermination expired threadPool.shutdownNow()");
             }
         } catch (InterruptedException ex) {
             threadPool.shutdownNow();
             Thread.currentThread().interrupt();
-            Log.d(DEBUG_TAG, "threadPool InterruptedException : threads interrupted");
+//            Log.d(DEBUG_TAG, "threadPool InterruptedException : threads interrupted");
         }
-        Log.d(DEBUG_TAG, "threadPool.shutdown() threads effectively finished");
+//        Log.d(DEBUG_TAG, "threadPool.shutdown() threads effectively finished");
     }
 
 
     private void copyAssets(AssetManager am, String source, String dest) throws IOException {
 
-        Log.d(DEBUG_TAG, "create directory: " + dest);
+//        Log.d(DEBUG_TAG, "create directory: " + dest);
         createDirectory(dest); // first create the directory
 
         final String[] list = am.list(source);
@@ -184,7 +184,7 @@ public class Repository {
         for (final String name : list) {
             final String sourcepath = source + File.separator + name;
             final String destpath = dest + File.separator + name;
-            Log.d(DEBUG_TAG, "************** sourcepath : " + sourcepath);
+//            Log.d(DEBUG_TAG, "************** sourcepath : " + sourcepath);
 
             AtomicReferenceArray<String> sublist = new AtomicReferenceArray<>(am.list(sourcepath));
             if (sublist.length() != 0) { // its a directory, recurse, dir will be created in the next recursion
@@ -207,7 +207,7 @@ public class Repository {
                         // update the install message with <jobCount>/<tempFileCount>
                         MainActivity.installCallback.onItemUpdate(++jobCount + "/" + tempFileCount);
                         // call native method
-                        Log.d(DEBUG_TAG, " destPath: " + destpath);
+//                        Log.d(DEBUG_TAG, " destPath: " + destpath);
                         installFilesFromAssets(am, tempDir, sourcepath, destpath, scount);
                     });
                 }
@@ -220,9 +220,9 @@ public class Repository {
         File file = new File(directoryPath);
         if (!file.exists()) {
             if (file.mkdirs()) {
-                Log.d(DEBUG_TAG, "Directory is created!");
+//                Log.d(DEBUG_TAG, "Directory is created!");
             } else {
-                Log.d(DEBUG_TAG, "Failed to create directory!");
+//                Log.d(DEBUG_TAG, "Failed to create directory!");
             }
         }
     }
@@ -264,9 +264,9 @@ public class Repository {
             String rootDir = "samples";
             String sourcePath = filesDirectory.getPath() + File.separator + rootDir;
             File dir = new File(sourcePath);
-            Log.d(DEBUG_TAG, "setUpSample() sourcePath: " + sourcePath);
+//            Log.d(DEBUG_TAG, "setUpSample() sourcePath: " + sourcePath);
             String[] list = dir.list();
-            Log.d(DEBUG_TAG, "setUpSample() dir.list: " + Arrays.toString(list));
+//            Log.d(DEBUG_TAG, "setUpSample() dir.list: " + Arrays.toString(list));
 
             shortBuffers.clear();
             filePaths.clear();
@@ -281,7 +281,7 @@ public class Repository {
                 buf = getAudioSample(filePath);
                 shortBuffers.add(buf);
             }
-            Log.d(DEBUG_TAG, "setUpSample() filePaths.list: " + Arrays.toString(filePaths.toArray()));
+//            Log.d(DEBUG_TAG, "setUpSample() filePaths.list: " + Arrays.toString(filePaths.toArray()));
         }
 
         // helper to order samples files as the are listed in the menu

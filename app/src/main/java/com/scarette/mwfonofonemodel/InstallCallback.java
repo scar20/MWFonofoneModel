@@ -29,7 +29,7 @@ public class InstallCallback {
 
     public void onInstall() {
         // inflate the layout of the popup window
-        Log.d( DEBUG_TAG, " onInstall() ");
+//        Log.d( DEBUG_TAG, " onInstall() ");
 
         LayoutInflater inflater = (LayoutInflater)
                 activity.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -54,13 +54,13 @@ public class InstallCallback {
     }
 
     public void onInstallFinished() {
-        Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() called" );
+//        Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() called" );
         mainView.post(() -> {
             popupWindow.dismiss();
             itemUpdateView = null;
             popupWindow = null;
         });
-        Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() finished" );
+//        Log.d( DEBUG_TAG, "CallbackInterface.onInstallFinished() finished" );
         mainView.post(() -> {
             ((MainActivity)activity).onInstallFinished();
         });
