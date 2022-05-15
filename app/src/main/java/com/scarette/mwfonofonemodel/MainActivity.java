@@ -111,10 +111,10 @@ public class MainActivity extends AppCompatActivity {
             // Check if we have all the necessary permissions, if not: prompt user
             int permission = checkSelfPermission(Manifest.permission.RECORD_AUDIO);
             if (permission == PackageManager.PERMISSION_GRANTED) {
-//                Log.d(DEBUG_TAG, "permission == PackageManager.PERMISSION_GRANTED, preinit()");
+                Log.d(DEBUG_TAG, "onCreate() check permission.RECORD_AUDIO == PackageManager.PERMISSION_GRANTED, calling preinit()");
                 preinit();
             } else {
-//                Log.d(DEBUG_TAG, "requesting permission");
+                Log.d(DEBUG_TAG, "onCreate() calling requesting permission");
                 requestPermissions(PERMISSIONS, PERMISSIONS_CODE);
             }
 
@@ -143,10 +143,16 @@ public class MainActivity extends AppCompatActivity {
             String permission = permissions[i];
             int grantResult = grantResults[i];
             if (permission.equals(Manifest.permission.RECORD_AUDIO) && grantResult == PackageManager.PERMISSION_GRANTED) {
-//                Log.d(DEBUG_TAG, "permission result == PackageManager.PERMISSION_GRANTED, preinit()");
-                preinit();
+//                Log.d(DEBUG_TAG, "onRequestPermissionsResult .RECORD_AUDIO == PackageManager.PERMISSION_GRANTED, calling preinit()");
+                if (!isPreInited) {
+                    isPreInited = true;
+                    Log.d(DEBUG_TAG, "onRequestPermissionsResult .RECORD_AUDIO == PackageManager.PERMISSION_GRANTED, calling preinit()");
+                    preinit();
+                } else {
+                    Log.d(DEBUG_TAG, "onRequestPermissionsResult isPreInited == true, NOT calling preinit()");
+                }
             } else {
-//                Log.d(DEBUG_TAG, "permission result not granted, send new requestPermission");
+                Log.d(DEBUG_TAG, "onRequestPermissionsResult :: permission result not granted, send calling requestPermission");
                 requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_CODE);
             }
         }
@@ -179,10 +185,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void preinit() {
 
-        if (!isInstallFilesFinished && !isPreInited) {
-//            Log.d(DEBUG_TAG, "preinit() initialize repository");
+        if (!isInstallFilesFinished) {
+            Log.d(DEBUG_TAG, "preinit() initialize repository");
             // Create Repository if not created - that will install the assets if first time
-            isPreInited = true; // set this first
+//            isPreInited = true; // set this first
             Repository repository = Repository.getInstance();
             repository.init(getApplication());
 //            isPreInited = true;
