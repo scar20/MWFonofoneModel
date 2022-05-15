@@ -118,13 +118,14 @@ public class Repository {
 //        Log.d(DEBUG_TAG, "destPath: " + destPath);
 
         MainActivity.installCallback.onInstall();
-
+        if (!installExecutor.isShutdown()) {
 //        Log.d(DEBUG_TAG, "dialog called");
-        try {
-            copyAssets(am, rootDir, destPath);
-        } catch (IOException e) {
+            try {
+                copyAssets(am, rootDir, destPath);
+            } catch (IOException e) {
 //            Log.d(DEBUG_TAG, "Exeption!");
-            e.printStackTrace();
+                e.printStackTrace();
+            }
         }
 
 
