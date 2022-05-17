@@ -117,8 +117,9 @@ public class Repository {
         String destPath = filesDirectory.getPath() + File.separator + rootDir;
 //        Log.d(DEBUG_TAG, "destPath: " + destPath);
 
-        MainActivity.installCallback.onInstall();
         if (!installExecutor.isShutdown()) {
+            MainActivity.installCallback.onInstall();
+
 //        Log.d(DEBUG_TAG, "dialog called");
             try {
                 copyAssets(am, rootDir, destPath);
@@ -126,10 +127,9 @@ public class Repository {
 //            Log.d(DEBUG_TAG, "Exeption!");
                 e.printStackTrace();
             }
-        }
 
 
-        // create user directory
+            // create user directory
 //        Log.d(DEBUG_TAG,"creating user dir");
 //        String userpath = filesDirectory.getPath() + File.separator + userDir;
 //        File user = new File(userpath);
@@ -142,16 +142,17 @@ public class Repository {
 //        }
 
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            awaitTerminationAfterShutdown(installExecutor);
-            long total = System.currentTimeMillis() - start;
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                awaitTerminationAfterShutdown(installExecutor);
+                long total = System.currentTimeMillis() - start;
 //            Log.d(DEBUG_TAG, "!!! populate files finished in " + total + "ms");
-            FileUtil.setUpSample();
-            MainActivity.installCallback.onInstallFinished();
+                FileUtil.setUpSample();
+                MainActivity.installCallback.onInstallFinished();
 //            Log.d(DEBUG_TAG, "!!! populate files finished");
-            executor.shutdown();
-        });
+                executor.shutdown();
+            });
+        }
 
 
         //       Log.d(DEBUG_TAG,"populate files finished");
